@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0b1020">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<meta name="mobile-web-app-capable" content="yes">
 <title>ONE MILLION WINS</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1020'/%3E%3Ccircle cx='32' cy='32' r='14' fill='%23e6c36a'/%3E%3C/svg%3E">
 <style>
@@ -109,11 +106,6 @@
   .tool:hover{color:var(--ivory);border-color:var(--mist)}
   .tool:disabled{opacity:.4;cursor:not-allowed}
 
-  .lapse{display:flex;justify-content:center;margin-top:10px}
-  .gave{background:transparent;border:1px solid rgba(229,139,123,.4);color:var(--coral);font:inherit;font-size:.82rem;padding:9px 16px;border-radius:99px;cursor:pointer}
-  .gave:hover{background:rgba(229,139,123,.08)}
-  .gave:disabled{opacity:.4;cursor:not-allowed}
-
   /* status */
   .foot{margin-top:22px;text-align:center;font-size:.8rem;color:var(--mist);line-height:1.7}
   .status{display:inline-flex;align-items:center;gap:8px}
@@ -174,10 +166,6 @@
     <input type="file" id="file" accept=".json,application/json" hidden>
   </div>
 
-  <div class="lapse">
-    <button class="gave" id="gave" disabled>I gave in to an urge (&minus;4)</button>
-  </div>
-
   <div class="foot">
     <div class="status" id="status"><span class="dot"></span><span id="statusText">Starting…</span></div>
     <div id="lastBackup"></div>
@@ -205,14 +193,12 @@
      ONE MILLION WINS
      Everything is stored in this browser's IndexedDB on this device.
      No network, no accounts, no cloud, no Claude.
-     Wins are only removed by "Undo last win" (accidental tap) or "I gave in" (permanent -4),
-     both after confirmation.
+     Records are only ever removed by "Undo last win" after confirmation.
      ------------------------------------------------------------ */
 
   const DB_NAME = 'OneMillionWinsDB';
-  const DB_VERSION = 2;
+  const DB_VERSION = 1;
   const STORE = 'wins';
-  const LAPSES = 'lapses';   // permanent record of every "I gave in" deduction
   const GOAL = 1000000;
   const LS_BACKUP = 'omw_last_backup';
 
@@ -220,7 +206,7 @@
   const el = {
     count: $('count'), fill: $('fill'), bar: $('bar'), pct: $('pct'),
     today: $('today'), alltime: $('alltime'), win: $('win'),
-    undo: $('undo'), gave: $('gave'), exp: $('export'), imp: $('import'), file: $('file'),
+    undo: $('undo'), exp: $('export'), imp: $('import'), file: $('file'),
     status: $('status'), statusText: $('statusText'), lastBackup: $('lastBackup'),
     toast: $('toast'), modal: $('modal'), mTitle: $('mTitle'), mBody: $('mBody'),
     mOk: $('mOk'), mCancel: $('mCancel'), hero: document.querySelector('.hero')
@@ -269,7 +255,6 @@
           s.createIndex('day', 'day');
           s.createIndex('ts', 'ts');
         }
-        if (!d.objectStoreNames.contains(LAPSES)) d.createObjectStore(LAPSES, { keyPath: 'id' });
       };
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => reject(req.error || new Error('Could not open storage.'));
@@ -283,12 +268,12 @@
     // Resolves only when the transaction has fully committed to disk.
     return new Promise((resolve, reject) => {
       let tx;
-      try { tx = db.transaction([STORE, LAPSES], 'readwrite', { durability: 'strict' }); }
-      catch (e) { tx = db.transaction([STORE, LAPSES], 'readwrite'); }
+      try { tx = db.transaction(STORE, 'readwrite', { durability: 'strict' }); }
+      catch (e) { tx = db.transaction(STORE, 'readwrite'); }
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error || new Error('Write failed.'));
       tx.onabort = () => reject(tx.error || new Error('Write was cancelled.'));
-      fn(tx.objectStore(STORE), tx.objectStore(LAPSES));
+      fn(tx.objectStore(STORE));
     });
   }
   const store = () => db.transaction(STORE).objectStore(STORE);
@@ -303,23 +288,6 @@
       r.onerror = () => rej(r.error);
     });
   }
-
-  function lastN(n) {
-    return new Promise((res, rej) => {
-      const out = [];
-      const r = store().index('ts').openCursor(null, 'prev');
-      r.onsuccess = () => {
-        const c = r.result;
-        if (c && out.length < n) { out.push(c.value); c.continue(); } else res(out);
-      };
-      r.onerror = () => rej(r.error);
-    });
-  }
-  const getAllLapses = () => reqP(db.transaction(LAPSES).objectStore(LAPSES).getAll());
-  function validLapse(l) {
-    return !!l && typeof l.id === 'string' && l.id.length > 0 && typeof l.ts === 'string' && !isNaN(new Date(l.ts).getTime()) && Array.isArray(l.removedIds);
-  }
-  const vic = n => n === 1 ? 'victory' : 'victories';
 
   /* serialise all changes so rapid taps can never interleave */
   let chain = Promise.resolve();
@@ -341,7 +309,6 @@
     el.fill.style.width = (total > 0 ? Math.max(pct, 0.6) : 0) + '%';
     el.bar.setAttribute('aria-valuenow', String(total));
     el.undo.disabled = !ready || total === 0;
-    el.gave.disabled = !ready || total === 0;
     if (celebrate) celebrateWin();
   }
   function celebrateWin() {
@@ -435,33 +402,11 @@
     }).catch(err => { console.error(err); toast('Could not remove it. Nothing was changed.'); });
   }
 
-  async function gaveIn() {
-    if (!ready || total === 0) return;
-    const n = Math.min(4, total);
-    const yes = await ask({
-      title: 'Deduct your last ' + (n === 1 ? 'victory' : n + ' victories') + '?',
-      body: 'You gave in, so your ' + (n === 1 ? 'most recent victory is' : n + ' most recent victories are') + ' removed.\nThis is permanent. It cannot be undone, and restoring a backup will not bring ' + (n === 1 ? 'it' : 'them') + ' back.',
-      ok: 'Yes, deduct ' + n, cancel: 'Cancel', danger: true
-    });
-    if (!yes) return;
-    enqueue(async () => {
-      const recent = await lastN(4);
-      if (!recent.length) return;
-      const now = new Date();
-      const lapse = { id: newId(), ts: now.toISOString(), day: dayKey(now), removedIds: recent.map(r => r.id), removedCount: recent.length, v: 1 };
-      await writeTx((s, l) => { l.add(lapse); for (const r of recent) s.delete(r.id); });   // one atomic step
-      await refreshCounts();
-      setStatus(true);
-      toast(recent.length + ' ' + vic(recent.length) + ' deducted. The next one starts now.');
-    }).catch(err => { console.error(err); toast('Could not record that. Nothing was changed.'); });
-  }
-
   /* ---------- backup ---------- */
   async function exportBackup() {
     if (!ready) return;
     try {
       const all = await getAll();
-      const lapseRows = (await getAllLapses()).filter(validLapse);
       const good = [], bad = [];
       for (const r of all) (validRecord(r) ? good : bad).push(r);
       good.sort((a, b) => a.ts < b.ts ? -1 : a.ts > b.ts ? 1 : 0);
@@ -479,8 +424,7 @@
         goal: GOAL,
         lifetimeVictories: achievements.length,
         dailyTotals,
-        achievements,
-        lapses: lapseRows.map(l => ({ id: l.id, timestamp: l.ts, date: l.day, removedCount: l.removedIds.length, removedIds: l.removedIds }))
+        achievements
       };
       if (bad.length) out.unreadableRecords = bad;   // never silently dropped
 
@@ -530,64 +474,36 @@
       const tz = (typeof a.tzOffsetMinutes === 'number' && isFinite(a.tzOffsetMinutes)) ? a.tzOffsetMinutes : -t.getTimezoneOffset();
       valid.push({ id: a.id, ts: t.toISOString(), day, tz, v: 1 });
     }
-    const lapses = [];
-    if (Array.isArray(data.lapses)) {
-      for (const l of data.lapses) {
-        if (!l || typeof l.id !== 'string' || !l.id || l.id.length > 100 || typeof l.timestamp !== 'string' || !Array.isArray(l.removedIds)) continue;
-        const t = new Date(l.timestamp);
-        if (isNaN(t.getTime())) continue;
-        const ids = l.removedIds.filter(x => typeof x === 'string' && x && x.length <= 100);
-        const day = (typeof l.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(l.date)) ? l.date : dayKey(t);
-        lapses.push({ id: l.id, ts: t.toISOString(), day, removedIds: ids, removedCount: ids.length, v: 1 });
-      }
-    }
-    if (valid.length === 0 && lapses.length === 0) throw new Error('That backup contains no valid achievements.');
-    return { valid, invalid, declared: data.lifetimeVictories, lapses };
+    if (valid.length === 0) throw new Error('That backup contains no valid achievements.');
+    return { valid, invalid, declared: data.lifetimeVictories };
   }
 
   async function importBackup(file) {
     if (!ready || !file) return;
     try {
-      const { valid, invalid, declared, lapses } = parseBackup(await readFile(file));
-      const localLapses = await getAllLapses();
-      const knownLapse = new Set(localLapses.map(l => l.id));
-      const newLapses = lapses.filter(l => !knownLapse.has(l.id));
-      // Deducted wins stay deducted: ids from every lapse (here or in the file) are never re-added.
-      const tomb = new Set();
-      for (const l of localLapses.concat(newLapses)) for (const id of l.removedIds) tomb.add(id);
+      const { valid, invalid, declared } = parseBackup(await readFile(file));
       const existing = new Set(await getAllKeys());
-      const candidates = valid.filter(r => !tomb.has(r.id));
-      const deducted = valid.length - candidates.length;
-      const fresh = candidates.filter(r => !existing.has(r.id));
-      const already = candidates.length - fresh.length;
-      const toRemove = Array.from(existing).filter(id => tomb.has(id));
+      const fresh = valid.filter(r => !existing.has(r.id));
+      const already = valid.length - fresh.length;
 
-      if (fresh.length === 0 && newLapses.length === 0 && toRemove.length === 0) {
-        return toast(deducted
-          ? 'Nothing to add. Victories you gave in on stay deducted.'
-          : 'Nothing new. All ' + fmt(valid.length) + ' victories in this file are already here.');
+      if (fresh.length === 0) {
+        return toast('Nothing new. All ' + fmt(valid.length) + ' victories in this file are already here.');
       }
-      const lines = [fmt(fresh.length) + ' new ' + vic(fresh.length) + ' will be added.'];
-      if (already) lines.push(fmt(already) + ' already here will be skipped.');
-      if (deducted) lines.push(fmt(deducted) + ' in the file were deducted earlier and stay deducted.');
-      if (toRemove.length) lines.push(fmt(toRemove.length) + ' you have now were deducted in this backup and will be removed.');
-      lines.push(toRemove.length ? 'Nothing else you have will be changed or deleted.' : 'Nothing you already have will be changed or deleted.');
-      if (invalid) lines.push(fmt(invalid) + ' unreadable entries in the file will be ignored.');
-      if (typeof declared === 'number' && declared !== valid.length + invalid) lines.push('Note: the file\u2019s own total does not match its contents.');
+      let body = fmt(fresh.length) + ' new victories will be added.\n' +
+        (already ? fmt(already) + ' are already here and will be skipped.\n' : '') +
+        'Nothing you already have will be changed or deleted.';
+      if (invalid) body += '\n' + fmt(invalid) + ' unreadable entries in the file will be ignored.';
+      if (typeof declared === 'number' && declared !== valid.length + invalid) body += '\nNote: the file\u2019s own total does not match its contents.';
 
-      const yes = await ask({ title: 'Add these victories?', body: lines.join('\n'), ok: 'Add them', cancel: 'Cancel' });
+      const yes = await ask({ title: 'Add these victories?', body, ok: 'Add them', cancel: 'Cancel' });
       if (!yes) return;
 
       await enqueue(async () => {
-        await writeTx((s, l) => {                    // all-or-nothing
-          for (const r of fresh) s.add(r);
-          for (const x of newLapses) l.add(x);
-          for (const id of toRemove) s.delete(id);
-        });
+        await writeTx(s => { for (const r of fresh) s.add(r); });   // all-or-nothing
         await refreshCounts();
         setStatus(true);
       });
-      toast('Restored ' + fmt(fresh.length) + ' ' + vic(fresh.length) + '.');
+      toast('Restored ' + fmt(fresh.length) + ' victories.');
     } catch (err) {
       console.error(err);
       toast(err && err.message ? err.message : 'Import failed. Nothing was changed.');
@@ -622,7 +538,6 @@
 
   el.win.addEventListener('click', recordWin);
   el.undo.addEventListener('click', undoLast);
-  el.gave.addEventListener('click', gaveIn);
   el.exp.addEventListener('click', exportBackup);
   el.imp.addEventListener('click', () => el.file.click());
   el.file.addEventListener('change', e => {
@@ -632,10 +547,6 @@
   });
   document.addEventListener('visibilitychange', () => { if (!document.hidden) checkDay(); });
   setInterval(checkDay, 30000);
-
-  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
-    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
-  }
 
   init();
 })();
