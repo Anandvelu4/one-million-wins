@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0b1020">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
 <title>ONE MILLION WINS</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1020'/%3E%3Ccircle cx='32' cy='32' r='14' fill='%23e6c36a'/%3E%3C/svg%3E">
 <style>
@@ -106,6 +109,11 @@
   .tool:hover{color:var(--ivory);border-color:var(--mist)}
   .tool:disabled{opacity:.4;cursor:not-allowed}
 
+  .lapse{display:flex;justify-content:center;margin-top:10px}
+  .gave{background:transparent;border:1px solid rgba(229,139,123,.4);color:var(--coral);font:inherit;font-size:.82rem;padding:9px 16px;border-radius:99px;cursor:pointer}
+  .gave:hover{background:rgba(229,139,123,.08)}
+  .gave:disabled{opacity:.4;cursor:not-allowed}
+
   /* status */
   .foot{margin-top:22px;text-align:center;font-size:.8rem;color:var(--mist);line-height:1.7}
   .status{display:inline-flex;align-items:center;gap:8px}
@@ -120,7 +128,7 @@
     padding:12px 18px;border-radius:12px;font-size:.9rem;max-width:90vw;text-align:center;z-index:20;
   }
   .scrim{position:fixed;inset:0;background:rgba(4,6,12,.72);display:flex;align-items:center;justify-content:center;padding:24px;z-index:30}
-  .dialog{background:var(--slate);border:1px solid var(--line);border-radius:18px;padding:24px;max-width:400px;width:100%}
+  .dialog{background:var(--slate);border:1px solid var(--line);border-radius:18px;padding:24px;max-width:400px;width:100%;max-height:85vh;overflow:auto}
   .dialog h2{font-family:var(--serif);font-weight:400;font-size:1.35rem;margin-bottom:10px}
   .dialog p{color:var(--mist);line-height:1.55;font-size:.95rem;white-space:pre-line}
   .dialog .row{display:flex;gap:10px;margin-top:22px}
@@ -161,9 +169,14 @@
 
   <div class="tools">
     <button class="tool" id="undo" disabled>Undo last win</button>
+    <button class="tool" id="rewards" disabled>Bonuses</button>
     <button class="tool" id="export" disabled>EXPORT BACKUP</button>
     <button class="tool" id="import" disabled>IMPORT BACKUP</button>
     <input type="file" id="file" accept=".json,application/json" hidden>
+  </div>
+
+  <div class="lapse">
+    <button class="gave" id="gave" disabled>I gave in to an urge (&minus;4)</button>
   </div>
 
   <div class="foot">
@@ -193,12 +206,17 @@
      ONE MILLION WINS
      Everything is stored in this browser's IndexedDB on this device.
      No network, no accounts, no cloud, no Claude.
-     Records are only ever removed by "Undo last win" after confirmation.
+     Wins are only removed by "Undo last win" (accidental tap) or "I gave in" (permanent -4),
+     both after confirmation.
      ------------------------------------------------------------ */
 
   const DB_NAME = 'OneMillionWinsDB';
-  const DB_VERSION = 1;
+  const DB_VERSION = 3;
   const STORE = 'wins';
+  const ADJ = 'adjustments';   // bonus / penalty ledger
+  const META = 'meta';
+  const RULES = { weekBonus: 100, monthBonus: 500, weekPenalty: 50, slipLimit: 5, streakFrom: 3, streakPenalty: 50, milestones: [[3, 10000], [6, 50000], [9, 100000]] };
+  const LAPSES = 'lapses';   // permanent record of every "I gave in" deduction
   const GOAL = 1000000;
   const LS_BACKUP = 'omw_last_backup';
 
@@ -206,7 +224,7 @@
   const el = {
     count: $('count'), fill: $('fill'), bar: $('bar'), pct: $('pct'),
     today: $('today'), alltime: $('alltime'), win: $('win'),
-    undo: $('undo'), exp: $('export'), imp: $('import'), file: $('file'),
+    undo: $('undo'), rewards: $('rewards'), gave: $('gave'), exp: $('export'), imp: $('import'), file: $('file'),
     status: $('status'), statusText: $('statusText'), lastBackup: $('lastBackup'),
     toast: $('toast'), modal: $('modal'), mTitle: $('mTitle'), mBody: $('mBody'),
     mOk: $('mOk'), mCancel: $('mCancel'), hero: document.querySelector('.hero')
@@ -214,7 +232,9 @@
 
   let db = null;
   let ready = false;
-  let total = 0;
+  let total = 0;      // points shown = winCount + adjSum
+  let winCount = 0;
+  let adjSum = 0;
   let today = 0;
   let currentDay = dayKey(new Date());
 
@@ -255,6 +275,9 @@
           s.createIndex('day', 'day');
           s.createIndex('ts', 'ts');
         }
+        if (!d.objectStoreNames.contains(LAPSES)) d.createObjectStore(LAPSES, { keyPath: 'id' });
+        if (!d.objectStoreNames.contains(ADJ)) d.createObjectStore(ADJ, { keyPath: 'id' });
+        if (!d.objectStoreNames.contains(META)) d.createObjectStore(META, { keyPath: 'k' });
       };
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => reject(req.error || new Error('Could not open storage.'));
@@ -268,12 +291,12 @@
     // Resolves only when the transaction has fully committed to disk.
     return new Promise((resolve, reject) => {
       let tx;
-      try { tx = db.transaction(STORE, 'readwrite', { durability: 'strict' }); }
-      catch (e) { tx = db.transaction(STORE, 'readwrite'); }
+      try { tx = db.transaction([STORE, LAPSES, ADJ, META], 'readwrite', { durability: 'strict' }); }
+      catch (e) { tx = db.transaction([STORE, LAPSES, ADJ, META], 'readwrite'); }
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error || new Error('Write failed.'));
       tx.onabort = () => reject(tx.error || new Error('Write was cancelled.'));
-      fn(tx.objectStore(STORE));
+      fn(tx.objectStore(STORE), tx.objectStore(LAPSES), tx.objectStore(ADJ), tx.objectStore(META));
     });
   }
   const store = () => db.transaction(STORE).objectStore(STORE);
@@ -287,6 +310,144 @@
       r.onsuccess = () => res(r.result ? r.result.value : null);
       r.onerror = () => rej(r.error);
     });
+  }
+
+  function lastN(n) {
+    return new Promise((res, rej) => {
+      const out = [];
+      const r = store().index('ts').openCursor(null, 'prev');
+      r.onsuccess = () => {
+        const c = r.result;
+        if (c && out.length < n) { out.push(c.value); c.continue(); } else res(out);
+      };
+      r.onerror = () => rej(r.error);
+    });
+  }
+  const getAllLapses = () => reqP(db.transaction(LAPSES).objectStore(LAPSES).getAll());
+  function validLapse(l) {
+    return !!l && typeof l.id === 'string' && l.id.length > 0 && typeof l.ts === 'string' && !isNaN(new Date(l.ts).getTime()) && Array.isArray(l.removedIds);
+  }
+  const vic = n => n === 1 ? 'victory' : 'victories';
+
+  const getAllAdjustments = () => reqP(db.transaction(ADJ).objectStore(ADJ).getAll());
+  const getMeta = k => reqP(db.transaction(META).objectStore(META).get(k));
+  function validAdj(a) {
+    return !!a && typeof a.id === 'string' && a.id.length > 0 && a.id.length <= 200 && Number.isInteger(a.points) &&
+      typeof a.ts === 'string' && !isNaN(new Date(a.ts).getTime());
+  }
+  function earliestWinTs() {
+    return new Promise((res, rej) => {
+      const r = store().index('ts').openCursor(null, 'next');
+      r.onsuccess = () => res(r.result ? r.result.value.ts : null);
+      r.onerror = () => rej(r.error);
+    });
+  }
+  const sign = n => (n > 0 ? '+' : n < 0 ? '\u2212' : '') + fmt(Math.abs(n));
+  const mkDate = (y, m, d) => new Date(y, m, d);                 // local midnight
+  const addDays = (d, n) => mkDate(d.getFullYear(), d.getMonth(), d.getDate() + n);
+  const startOfDay = d => mkDate(d.getFullYear(), d.getMonth(), d.getDate());
+  const mondayOnOrAfter = d => { const x = startOfDay(d); const k = (x.getDay() + 6) % 7; return k === 0 ? x : addDays(x, 7 - k); };
+  const mondayOnOrBefore = d => { const x = startOfDay(d); return addDays(x, -((x.getDay() + 6) % 7)); };
+  function addMonths(d, m) {
+    const x = new Date(d.getTime()), day = x.getDate();
+    x.setMonth(x.getMonth() + m);
+    if (x.getDate() !== day) x.setDate(0);                       // e.g. 31 Aug + 3 months -> 30 Nov
+    return x;
+  }
+  const shortDate = d => d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+
+  // The tracking start only ever moves earlier, so awards stay stable.
+  async function trackingStart(lapses) {
+    const metaRow = await getMeta('start');
+    const c = [];
+    if (metaRow && typeof metaRow.ts === 'string') c.push(metaRow.ts);
+    const fw = await earliestWinTs(); if (fw) c.push(fw);
+    for (const l of lapses) c.push(l.ts);
+    if (!c.length) c.push(new Date().toISOString());
+    return { ts: c.reduce((a, b) => a < b ? a : b), metaRow };
+  }
+
+  /* Bonus / penalty rules. Awards have fixed ids, so they can never be given twice. */
+  async function evaluateRewards() {
+    const now = new Date();
+    const todayStart = startOfDay(now);
+    const lapses = (await getAllLapses()).filter(validLapse);
+    const adj = await getAllAdjustments();
+    const have = new Set(adj.map(a => a.id));
+    const { ts: startTs, metaRow } = await trackingStart(lapses);
+    if (!metaRow || startTs < metaRow.ts) await writeTx((s, l, a, m) => m.put({ k: 'start', ts: startTs }));
+    const start = new Date(startTs);
+
+    const slipDays = {};
+    for (const l of lapses) slipDays[l.day] = (slipDays[l.day] || 0) + 1;
+    const slipsIn = (from, to) => { let n = 0; for (let d = from; d < to; d = addDays(d, 1)) n += slipDays[dayKey(d)] || 0; return n; };
+
+    const due = [];
+    // complete Monday-Sunday weeks that began on/after tracking started
+    for (let w = mondayOnOrAfter(start); addDays(w, 7) <= todayStart; w = addDays(w, 7)) {
+      const end = addDays(w, 7), n = slipsIn(w, end);
+      if (n === 0) due.push({ id: 'wk-bonus-' + dayKey(w), ts: end, points: RULES.weekBonus, kind: 'week-bonus', label: 'Clean week of ' + shortDate(w) });
+      else if (n > RULES.slipLimit) due.push({ id: 'wk-penalty-' + dayKey(w), ts: end, points: -RULES.weekPenalty, kind: 'week-penalty', label: n + ' slips in week of ' + shortDate(w) });
+    }
+    // complete calendar months that began on/after tracking started
+    let mo = mkDate(start.getFullYear(), start.getMonth(), 1);
+    if (mo < startOfDay(start)) mo = mkDate(start.getFullYear(), start.getMonth() + 1, 1);
+    for (; mkDate(mo.getFullYear(), mo.getMonth() + 1, 1) <= todayStart; mo = mkDate(mo.getFullYear(), mo.getMonth() + 1, 1)) {
+      const next = mkDate(mo.getFullYear(), mo.getMonth() + 1, 1);
+      if (slipsIn(mo, next) === 0) due.push({ id: 'mo-bonus-' + mo.getFullYear() + '-' + pad(mo.getMonth() + 1), ts: next, points: RULES.monthBonus, kind: 'month-bonus', label: 'Clean month: ' + mo.toLocaleDateString(undefined, { month: 'long', year: 'numeric' }) });
+    }
+    // 3 / 6 / 9 months since the last slip (or since tracking began)
+    let since = start;
+    for (const l of lapses) { const t = new Date(l.ts); if (t > since) since = t; }
+    for (const [months, pts] of RULES.milestones) {
+      const at = addMonths(since, months);
+      if (at <= now) due.push({ id: 'ms-' + since.toISOString() + '-' + months, ts: at, points: pts, kind: 'milestone', label: months + ' months clean' });
+    }
+
+    const fresh = due.filter(d => !have.has(d.id)).sort((a, b) => a.ts - b.ts);
+    if (!fresh.length) return [];
+    let run = (await countAll()) + adj.reduce((t, a) => t + a.points, 0);
+    const rows = [];
+    for (const d of fresh) {
+      let pts = d.points;
+      if (pts < 0) pts = -Math.min(-pts, Math.max(run, 0));      // a penalty never takes you below 0
+      run += pts;
+      rows.push({ id: d.id, ts: d.ts.toISOString(), day: dayKey(d.ts), points: pts, kind: d.kind, label: d.label, v: 1 });
+    }
+    await writeTx((s, l, a) => { for (const r of rows) a.add(r); });
+    await refreshCounts();
+    setStatus(true);
+    const shown = rows.filter(r => r.points !== 0), net = shown.reduce((t, r) => t + r.points, 0);
+    if (shown.length === 1) toast(sign(shown[0].points) + ' \u00b7 ' + shown[0].label);
+    else if (shown.length > 1) toast(shown.length + ' rewards applied (net ' + sign(net) + ')');
+    if (net > 0) celebrateWin();
+    return rows;
+  }
+
+  async function showRewards() {
+    if (!ready) return;
+    const now = new Date();
+    const lapses = (await getAllLapses()).filter(validLapse);
+    const adj = await getAllAdjustments();
+    const have = new Set(adj.map(a => a.id));
+    const { ts: startTs } = await trackingStart(lapses);
+    const slipDays = {};
+    for (const l of lapses) slipDays[l.day] = (slipDays[l.day] || 0) + 1;
+    const wk = mondayOnOrBefore(now);
+    let slips = 0; for (let i = 0; i < 7; i++) slips += slipDays[dayKey(addDays(wk, i))] || 0;
+    let since = new Date(startTs);
+    for (const l of lapses) { const t = new Date(l.ts); if (t > since) since = t; }
+    const days = Math.max(0, Math.floor((startOfDay(now) - startOfDay(since)) / 86400000));
+    const lines = ['This week: ' + slips + (slips === 1 ? ' slip' : ' slips') + (slips > RULES.slipLimit ? ' (penalty \u2212' + RULES.weekPenalty + ' when the week ends)' : ''),
+      'Clean since ' + since.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) + ' (' + days + (days === 1 ? ' day)' : ' days)'), ''];
+    for (const [m, pts] of RULES.milestones) {
+      const got = have.has('ms-' + since.toISOString() + '-' + m);
+      lines.push((got ? '\u2713 ' : '\u2022 ') + m + ' months clean: ' + sign(pts) + (got ? '' : ' on ' + shortDate(addMonths(since, m)) + ' ' + addMonths(since, m).getFullYear()));
+    }
+    lines.push('', 'Rules', 'Clean week ' + sign(RULES.weekBonus) + ' \u00b7 Clean month ' + sign(RULES.monthBonus), 'More than ' + RULES.slipLimit + ' slips in a week ' + sign(-RULES.weekPenalty), 'Each slip also removes 4 (permanent)', 'From the ' + RULES.streakFrom + 'rd slip in a row (no victory between): extra \u2212' + RULES.streakPenalty + ' each');
+    const recent = adj.filter(a => a.points !== 0 && a.kind !== 'lapse-extra').sort((a, b) => a.ts < b.ts ? 1 : -1).slice(0, 8);
+    if (recent.length) { lines.push('', 'Recent'); for (const a of recent) lines.push(sign(a.points) + '  ' + (a.label || a.kind)); }
+    await ask({ title: 'Bonuses', body: lines.join('\n'), ok: 'Close', single: true });
   }
 
   /* serialise all changes so rapid taps can never interleave */
@@ -308,7 +469,8 @@
     el.pct.textContent = pct.toFixed(4) + '% complete';
     el.fill.style.width = (total > 0 ? Math.max(pct, 0.6) : 0) + '%';
     el.bar.setAttribute('aria-valuenow', String(total));
-    el.undo.disabled = !ready || total === 0;
+    el.undo.disabled = !ready || winCount === 0;
+    el.gave.disabled = !ready || total === 0;
     if (celebrate) celebrateWin();
   }
   function celebrateWin() {
@@ -338,14 +500,15 @@
       ? 'Last backup: ' + d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
       : 'No backup yet. Export one to keep a copy off this browser.';
   }
-  function ask({ title, body, ok = 'Confirm', cancel = 'Cancel', danger = false }) {
+  function ask({ title, body, ok = 'Confirm', cancel = 'Cancel', danger = false, single = false }) {
     return new Promise(resolve => {
       el.mTitle.textContent = title; el.mBody.textContent = body;
       el.mOk.textContent = ok; el.mCancel.textContent = cancel;
       el.mOk.className = danger ? 'danger' : 'primary';
-      el.modal.hidden = false; el.mCancel.focus();
+      el.mCancel.hidden = single;
+      el.modal.hidden = false; (single ? el.mOk : el.mCancel).focus();
       const done = v => {
-        el.modal.hidden = true;
+        el.modal.hidden = true; el.mCancel.hidden = false;
         el.mOk.onclick = el.mCancel.onclick = null;
         document.removeEventListener('keydown', onKey);
         resolve(v);
@@ -360,7 +523,9 @@
   /* ---------- core actions ---------- */
   async function refreshCounts() {
     currentDay = dayKey(new Date());
-    total = await countAll();
+    winCount = await countAll();
+    adjSum = (await getAllAdjustments()).reduce((t, a) => t + (a.points || 0), 0);
+    total = winCount + adjSum;
     today = await countDay(currentDay);
     render(false);
   }
@@ -371,6 +536,7 @@
     const rec = { id: newId(), ts: now.toISOString(), day: dayKey(now), tz: -now.getTimezoneOffset(), v: 1 };
     enqueue(async () => {
       await writeTx(s => s.add(rec));            // committed before we count it
+      winCount += 1;
       total += 1;
       if (rec.day === currentDay) today += 1; else { await refreshCounts(); }
       render(true);
@@ -402,11 +568,57 @@
     }).catch(err => { console.error(err); toast('Could not remove it. Nothing was changed.'); });
   }
 
+  // How many slips in a row (no victory recorded in between) the NEXT slip would make.
+  async function nextSlipStreak() {
+    const lapses = (await getAllLapses()).filter(validLapse).sort((x, y) => x.ts < y.ts ? -1 : 1);
+    const prev = lapses.length ? lapses[lapses.length - 1] : null;
+    if (!prev) return 1;
+    const winsSince = await reqP(store().index('ts').count(IDBKeyRange.lowerBound(prev.ts, true)));
+    const prevStreak = Number.isInteger(prev.streak) && prev.streak >= 1 ? prev.streak : 1;
+    return winsSince === 0 ? prevStreak + 1 : 1;
+  }
+
+  async function gaveIn() {
+    if (!ready || total === 0) return;
+    const n = Math.min(4, total);
+    let streak = 1;
+    try { streak = await nextSlipStreak(); } catch (e) { /* treat as 1 */ }
+    const pen = streak >= RULES.streakFrom ? Math.min(RULES.streakPenalty, Math.max(total - n, 0)) : 0;
+    const yes = await ask({
+      title: 'Deduct your last ' + (n === 1 ? 'point' : n + ' points') + '?',
+      body: 'You gave in, so ' + (n === 1 ? '1 point is' : n + ' points are') + ' removed.' +
+        (streak >= RULES.streakFrom ? '\nThis is slip ' + streak + ' in a row with no victory in between. An extra \u2212' + pen + ' applies.' : '') +
+        '\nThis is permanent. It cannot be undone, and restoring a backup will not bring ' + (n === 1 ? 'it' : 'them') + ' back.',
+      ok: 'Yes, deduct ' + (n + pen), cancel: 'Cancel', danger: true
+    });
+    if (!yes) return;
+    enqueue(async () => {
+      const take = Math.min(4, total);
+      if (take <= 0) return;
+      const st = await nextSlipStreak();
+      const extraPen = st >= RULES.streakFrom ? Math.min(RULES.streakPenalty, Math.max(total - take, 0)) : 0;
+      const recent = await lastN(take);                 // newest win records first
+      const extra = take - recent.length;               // remainder comes off earned bonus points
+      const now = new Date();
+      const lapse = { id: newId(), ts: now.toISOString(), day: dayKey(now), removedIds: recent.map(r => r.id), removedCount: recent.length, streak: st, v: 1 };
+      const rows = [];
+      if (extra > 0) rows.push({ id: 'lapse-extra-' + lapse.id, ts: lapse.ts, day: lapse.day, points: -extra, kind: 'lapse-extra', label: 'Gave in', v: 1 });
+      if (extraPen > 0) rows.push({ id: 'streak-penalty-' + lapse.id, ts: lapse.ts, day: lapse.day, points: -extraPen, kind: 'streak-penalty', label: 'Gave in ' + st + ' times in a row', v: 1 });
+      await writeTx((s, l, a) => { l.add(lapse); for (const r of recent) s.delete(r.id); for (const r of rows) a.add(r); });   // one atomic step
+      await refreshCounts();
+      setStatus(true);
+      toast((take + extraPen) + ' points deducted' + (extraPen ? ' (' + take + ' + ' + extraPen + ' for ' + st + ' in a row)' : '') + '. The next one starts now.');
+    }).catch(err => { console.error(err); toast('Could not record that. Nothing was changed.'); });
+  }
+
   /* ---------- backup ---------- */
   async function exportBackup() {
     if (!ready) return;
     try {
       const all = await getAll();
+      const lapseRows = (await getAllLapses()).filter(validLapse);
+      const adjRows = (await getAllAdjustments()).filter(validAdj);
+      const startRow = await getMeta('start');
       const good = [], bad = [];
       for (const r of all) (validRecord(r) ? good : bad).push(r);
       good.sort((a, b) => a.ts < b.ts ? -1 : a.ts > b.ts ? 1 : 0);
@@ -422,15 +634,19 @@
         format: 1,
         exportedAt: new Date().toISOString(),
         goal: GOAL,
-        lifetimeVictories: achievements.length,
+        lifetimeVictories: achievements.length + adjRows.reduce((t, a) => t + a.points, 0),   // total points incl. bonuses
+        victoryRecords: achievements.length,
+        trackingStart: startRow ? startRow.ts : null,
         dailyTotals,
-        achievements
+        achievements,
+        lapses: lapseRows.map(l => ({ id: l.id, timestamp: l.ts, date: l.day, removedCount: l.removedIds.length, removedIds: l.removedIds, streak: l.streak || 1 })),
+        adjustments: adjRows.map(a => ({ id: a.id, timestamp: a.ts, date: a.day, points: a.points, kind: a.kind || '', label: a.label || '' }))
       };
       if (bad.length) out.unreadableRecords = bad;   // never silently dropped
 
       const now = new Date();
       const name = 'one-million-wins-backup-' + dayKey(now) + '_' + pad(now.getHours()) + pad(now.getMinutes()) +
-        '-' + achievements.length + 'wins.json';
+        '-' + out.lifetimeVictories + 'wins.json';
       const blob = new Blob([JSON.stringify(out)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -440,7 +656,7 @@
 
       lsSet(LS_BACKUP, now.toISOString());
       renderBackupLine();
-      toast('Backup saved: ' + fmt(achievements.length) + ' victories.' + (bad.length ? ' ' + bad.length + ' unreadable record(s) included separately.' : ''));
+      toast('Backup saved: ' + fmt(out.lifetimeVictories) + ' victories.' + (bad.length ? ' ' + bad.length + ' unreadable record(s) included separately.' : ''));
     } catch (err) {
       console.error(err);
       toast('Backup failed. Your achievements are untouched. Please try again.');
@@ -474,36 +690,84 @@
       const tz = (typeof a.tzOffsetMinutes === 'number' && isFinite(a.tzOffsetMinutes)) ? a.tzOffsetMinutes : -t.getTimezoneOffset();
       valid.push({ id: a.id, ts: t.toISOString(), day, tz, v: 1 });
     }
-    if (valid.length === 0) throw new Error('That backup contains no valid achievements.');
-    return { valid, invalid, declared: data.lifetimeVictories };
+    const lapses = [];
+    if (Array.isArray(data.lapses)) {
+      for (const l of data.lapses) {
+        if (!l || typeof l.id !== 'string' || !l.id || l.id.length > 100 || typeof l.timestamp !== 'string' || !Array.isArray(l.removedIds)) continue;
+        const t = new Date(l.timestamp);
+        if (isNaN(t.getTime())) continue;
+        const ids = l.removedIds.filter(x => typeof x === 'string' && x && x.length <= 100);
+        const day = (typeof l.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(l.date)) ? l.date : dayKey(t);
+        lapses.push({ id: l.id, ts: t.toISOString(), day, removedIds: ids, removedCount: ids.length, streak: (Number.isInteger(l.streak) && l.streak >= 1 && l.streak <= 100000) ? l.streak : 1, v: 1 });
+      }
+    }
+    const adjustments = [];
+    if (Array.isArray(data.adjustments)) {
+      for (const a of data.adjustments) {
+        if (!a || typeof a.id !== 'string' || !a.id || a.id.length > 200 || !Number.isInteger(a.points) || Math.abs(a.points) > 10000000 || typeof a.timestamp !== 'string') continue;
+        const t = new Date(a.timestamp);
+        if (isNaN(t.getTime())) continue;
+        const day = (typeof a.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(a.date)) ? a.date : dayKey(t);
+        adjustments.push({ id: a.id, ts: t.toISOString(), day, points: a.points, kind: String(a.kind || '').slice(0, 30), label: String(a.label || '').slice(0, 120), v: 1 });
+      }
+    }
+    let trackingStartTs = null;
+    if (typeof data.trackingStart === 'string' && !isNaN(new Date(data.trackingStart).getTime())) trackingStartTs = new Date(data.trackingStart).toISOString();
+    if (valid.length === 0 && lapses.length === 0 && adjustments.length === 0) throw new Error('That backup contains no valid achievements.');
+    return { valid, invalid, declared: typeof data.victoryRecords === 'number' ? data.victoryRecords : data.lifetimeVictories, lapses, adjustments, trackingStartTs };
   }
 
   async function importBackup(file) {
     if (!ready || !file) return;
     try {
-      const { valid, invalid, declared } = parseBackup(await readFile(file));
+      const { valid, invalid, declared, lapses, adjustments, trackingStartTs } = parseBackup(await readFile(file));
+      const localLapses = await getAllLapses();
+      const knownLapse = new Set(localLapses.map(l => l.id));
+      const newLapses = lapses.filter(l => !knownLapse.has(l.id));
+      const haveAdj = new Set((await getAllAdjustments()).map(a => a.id));
+      const newAdj = adjustments.filter(a => !haveAdj.has(a.id));
+      const metaRow = await getMeta('start');
+      const newStart = trackingStartTs && (!metaRow || trackingStartTs < metaRow.ts) ? trackingStartTs : null;
+      // Deducted wins stay deducted: ids from every lapse (here or in the file) are never re-added.
+      const tomb = new Set();
+      for (const l of localLapses.concat(newLapses)) for (const id of l.removedIds) tomb.add(id);
       const existing = new Set(await getAllKeys());
-      const fresh = valid.filter(r => !existing.has(r.id));
-      const already = valid.length - fresh.length;
+      const candidates = valid.filter(r => !tomb.has(r.id));
+      const deducted = valid.length - candidates.length;
+      const fresh = candidates.filter(r => !existing.has(r.id));
+      const already = candidates.length - fresh.length;
+      const toRemove = Array.from(existing).filter(id => tomb.has(id));
 
-      if (fresh.length === 0) {
-        return toast('Nothing new. All ' + fmt(valid.length) + ' victories in this file are already here.');
+      if (fresh.length === 0 && newLapses.length === 0 && toRemove.length === 0 && newAdj.length === 0) {
+        return toast(deducted
+          ? 'Nothing to add. Victories you gave in on stay deducted.'
+          : 'Nothing new. All ' + fmt(valid.length) + ' victories in this file are already here.');
       }
-      let body = fmt(fresh.length) + ' new victories will be added.\n' +
-        (already ? fmt(already) + ' are already here and will be skipped.\n' : '') +
-        'Nothing you already have will be changed or deleted.';
-      if (invalid) body += '\n' + fmt(invalid) + ' unreadable entries in the file will be ignored.';
-      if (typeof declared === 'number' && declared !== valid.length + invalid) body += '\nNote: the file\u2019s own total does not match its contents.';
+      const lines = [fmt(fresh.length) + ' new ' + vic(fresh.length) + ' will be added.'];
+      if (already) lines.push(fmt(already) + ' already here will be skipped.');
+      if (newAdj.length) lines.push(fmt(newAdj.length) + ' bonus/penalty ' + (newAdj.length === 1 ? 'entry' : 'entries') + ' (net ' + sign(newAdj.reduce((t, a) => t + a.points, 0)) + ' points) will be added.');
+      if (deducted) lines.push(fmt(deducted) + ' in the file were deducted earlier and stay deducted.');
+      if (toRemove.length) lines.push(fmt(toRemove.length) + ' you have now were deducted in this backup and will be removed.');
+      lines.push(toRemove.length ? 'Nothing else you have will be changed or deleted.' : 'Nothing you already have will be changed or deleted.');
+      if (invalid) lines.push(fmt(invalid) + ' unreadable entries in the file will be ignored.');
+      if (typeof declared === 'number' && declared !== valid.length + invalid) lines.push('Note: the file\u2019s own total does not match its contents.');
 
-      const yes = await ask({ title: 'Add these victories?', body, ok: 'Add them', cancel: 'Cancel' });
+      const yes = await ask({ title: 'Add these victories?', body: lines.join('\n'), ok: 'Add them', cancel: 'Cancel' });
       if (!yes) return;
 
       await enqueue(async () => {
-        await writeTx(s => { for (const r of fresh) s.add(r); });   // all-or-nothing
+        await writeTx((s, l, a, m) => {              // all-or-nothing
+          for (const r of fresh) s.add(r);
+          for (const x of newAdj) a.add(x);
+          if (newStart) m.put({ k: 'start', ts: newStart });
+          for (const x of newLapses) l.add(x);
+          for (const id of toRemove) s.delete(id);
+        });
         await refreshCounts();
         setStatus(true);
       });
-      toast('Restored ' + fmt(fresh.length) + ' victories.');
+      toast('Restored ' + fmt(fresh.length) + ' ' + vic(fresh.length) + (newAdj.length ? ' and ' + newAdj.length + ' bonus/penalty ' + (newAdj.length === 1 ? 'entry' : 'entries') : '') + '.');
+      enqueue(evaluateRewards).catch(e => console.error(e));
     } catch (err) {
       console.error(err);
       toast(err && err.message ? err.message : 'Import failed. Nothing was changed.');
@@ -513,7 +777,7 @@
   /* ---------- start ---------- */
   async function checkDay() {
     if (ready && dayKey(new Date()) !== currentDay) {
-      try { await enqueue(refreshCounts); } catch (e) { /* ignore */ }
+      try { await enqueue(refreshCounts); await enqueue(evaluateRewards); } catch (e) { console.error(e); }
     }
   }
 
@@ -524,9 +788,10 @@
       db.onversionchange = () => { db.close(); ready = false; setStatus(false, 'Storage was closed by another tab. Reload this page.'); };
       await refreshCounts();
       ready = true;
-      el.win.disabled = el.exp.disabled = el.imp.disabled = false;
+      el.win.disabled = el.exp.disabled = el.imp.disabled = el.rewards.disabled = false;
       render(false);
       setStatus(true);
+      await enqueue(evaluateRewards).catch(e => console.error(e));
       try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) { /* optional */ }
     } catch (err) {
       console.error(err);
@@ -538,6 +803,8 @@
 
   el.win.addEventListener('click', recordWin);
   el.undo.addEventListener('click', undoLast);
+  el.gave.addEventListener('click', gaveIn);
+  el.rewards.addEventListener('click', showRewards);
   el.exp.addEventListener('click', exportBackup);
   el.imp.addEventListener('click', () => el.file.click());
   el.file.addEventListener('change', e => {
@@ -545,8 +812,12 @@
     if (f) importBackup(f);
     try { e.target.value = ''; } catch (err) { /* ignore */ }
   });
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) checkDay(); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { checkDay(); if (ready) enqueue(evaluateRewards).catch(e => console.error(e)); } });
   setInterval(checkDay, 30000);
+
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+  }
 
   init();
 })();
