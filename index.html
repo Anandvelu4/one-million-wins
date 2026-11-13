@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<title>ONE MILLION WINS</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1020'/%3E%3Ccircle cx='32' cy='32' r='14' fill='%23e6c36a'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --midnight:#0b1020;
+    --slate:#151b2e;
+    --line:#252d45;
+    --mist:#9aa5c0;
+    --ivory:#f4efe3;
+    --gold:#e6c36a;
+    --gold-deep:#caa44a;
+    --coral:#e58b7b;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  [hidden]{display:none !important}
+  html,body{height:100%}
+  body{
+    background:radial-gradient(120% 70% at 50% 0%,#141b33 0%,var(--midnight) 60%);
+    color:var(--ivory);
+    font-family:var(--sans);
+    -webkit-tap-highlight-color:transparent;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  main{
+    max-width:520px;margin:0 auto;min-height:100%;
+    display:flex;flex-direction:column;padding:28px 24px 20px;
+  }
+  .brand{
+    text-align:center;font-size:.8rem;letter-spacing:.32em;color:var(--mist);font-weight:600;
+  }
+
+  /* hero counter */
+  .hero{
+    flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;
+    position:relative;padding:28px 0 12px;text-align:center;
+  }
+  .count{
+    font-family:var(--serif);font-weight:400;line-height:1;
+    font-size:min(8rem,24vw);
+    font-variant-numeric:tabular-nums lining-nums;
+    letter-spacing:-.01em;color:var(--ivory);
+  }
+  .count.m{font-size:min(7rem,19vw)}
+  .count.l{font-size:min(5.5rem,13.5vw)}
+  .count.pulse{animation:pulse .5s cubic-bezier(.2,.8,.2,1)}
+  @keyframes pulse{
+    0%{transform:scale(1);color:var(--ivory)}
+    30%{transform:scale(1.05);color:var(--gold)}
+    100%{transform:scale(1);color:var(--ivory)}
+  }
+  .count-label{margin-top:14px;color:var(--mist);font-size:.95rem}
+  .fly{
+    position:absolute;left:50%;top:36%;color:var(--gold);font-family:var(--serif);font-size:1.6rem;
+    pointer-events:none;transform:translateX(-50%);animation:fly .8s ease-out forwards;
+  }
+  @keyframes fly{
+    from{opacity:1;transform:translate(-50%,0)}
+    to{opacity:0;transform:translate(-50%,-56px)}
+  }
+
+  /* progress */
+  .progress{margin:8px 0 22px}
+  .bar{height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+  .fill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--gold-deep),var(--gold));transition:width .6s cubic-bezier(.2,.8,.2,1)}
+  .progress-row{display:flex;justify-content:space-between;margin-top:10px;font-size:.85rem;color:var(--mist)}
+
+  .stats{display:flex;gap:12px;margin-bottom:22px}
+  .stat{flex:1;background:var(--slate);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+  .stat b{display:block;font-family:var(--serif);font-weight:400;font-size:1.7rem;font-variant-numeric:tabular-nums lining-nums}
+  .stat span{font-size:.82rem;color:var(--mist)}
+
+  /* the button */
+  .win{
+    width:100%;border:0;cursor:pointer;border-radius:22px;
+    padding:26px 20px;background:linear-gradient(180deg,var(--gold),var(--gold-deep));
+    color:#1a1405;font-family:var(--sans);font-weight:800;font-size:1.15rem;letter-spacing:.04em;
+    display:flex;flex-direction:column;align-items:center;gap:4px;
+    box-shadow:0 10px 30px rgba(230,195,106,.18);
+    transition:transform .12s ease,box-shadow .12s ease,filter .12s ease;
+    touch-action:manipulation;
+  }
+  .win .plus{font-family:var(--serif);font-weight:400;font-size:1.9rem;line-height:1}
+  .win:active{transform:scale(.97);box-shadow:0 4px 14px rgba(230,195,106,.14)}
+  .win:disabled{filter:grayscale(1) brightness(.5);cursor:not-allowed}
+  .win.flash{animation:flash .45s ease-out}
+  @keyframes flash{
+    0%{box-shadow:0 0 0 0 rgba(230,195,106,.55)}
+    100%{box-shadow:0 0 0 26px rgba(230,195,106,0)}
+  }
+  :focus-visible{outline:2px solid var(--ivory);outline-offset:3px}
+
+  /* small tools */
+  .tools{display:flex;justify-content:center;gap:8px;margin-top:20px;flex-wrap:wrap}
+  .tool{
+    background:transparent;border:1px solid var(--line);color:var(--mist);
+    font:inherit;font-size:.82rem;padding:9px 14px;border-radius:99px;cursor:pointer;
+  }
+  .tool:hover{color:var(--ivory);border-color:var(--mist)}
+  .tool:disabled{opacity:.4;cursor:not-allowed}
+
+  /* status */
+  .foot{margin-top:22px;text-align:center;font-size:.8rem;color:var(--mist);line-height:1.7}
+  .status{display:inline-flex;align-items:center;gap:8px}
+  .dot{width:8px;height:8px;border-radius:50%;background:#6fcf97}
+  .status.bad{color:var(--coral)}
+  .status.bad .dot{background:var(--coral)}
+
+  /* toast + modal */
+  .toast{
+    position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);
+    background:var(--slate);border:1px solid var(--line);color:var(--ivory);
+    padding:12px 18px;border-radius:12px;font-size:.9rem;max-width:90vw;text-align:center;z-index:20;
+  }
+  .scrim{position:fixed;inset:0;background:rgba(4,6,12,.72);display:flex;align-items:center;justify-content:center;padding:24px;z-index:30}
+  .dialog{background:var(--slate);border:1px solid var(--line);border-radius:18px;padding:24px;max-width:400px;width:100%}
+  .dialog h2{font-family:var(--serif);font-weight:400;font-size:1.35rem;margin-bottom:10px}
+  .dialog p{color:var(--mist);line-height:1.55;font-size:.95rem;white-space:pre-line}
+  .dialog .row{display:flex;gap:10px;margin-top:22px}
+  .dialog button{flex:1;font:inherit;font-weight:600;padding:12px;border-radius:12px;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--ivory)}
+  .dialog button.primary{background:var(--gold);border-color:var(--gold);color:#1a1405}
+  .dialog button.danger{background:var(--coral);border-color:var(--coral);color:#2a0d08}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none !important;transition:none !important}
+  }
+</style>
+</head>
+<body>
+<main>
+  <div class="brand">ONE MILLION WINS</div>
+
+  <section class="hero" aria-live="polite">
+    <div class="count" id="count">0</div>
+    <div class="count-label">lifetime victories over urges</div>
+  </section>
+
+  <section class="progress">
+    <div class="bar" role="progressbar" id="bar" aria-valuemin="0" aria-valuemax="1000000" aria-valuenow="0" aria-label="Progress toward 1,000,000 victories">
+      <div class="fill" id="fill"></div>
+    </div>
+    <div class="progress-row"><span id="pct">0.0000%</span><span>Goal: 1,000,000</span></div>
+  </section>
+
+  <section class="stats">
+    <div class="stat"><b id="today">0</b><span>Today's victories</span></div>
+    <div class="stat"><b id="alltime">0</b><span>All-time victories</span></div>
+  </section>
+
+  <button class="win" id="win" disabled>
+    <span>I OVERCAME AN URGE</span>
+    <span class="plus">+1</span>
+  </button>
+
+  <div class="tools">
+    <button class="tool" id="undo" disabled>Undo last win</button>
+    <button class="tool" id="export" disabled>EXPORT BACKUP</button>
+    <button class="tool" id="import" disabled>IMPORT BACKUP</button>
+    <input type="file" id="file" accept=".json,application/json" hidden>
+  </div>
+
+  <div class="foot">
+    <div class="status" id="status"><span class="dot"></span><span id="statusText">Starting…</span></div>
+    <div id="lastBackup"></div>
+  </div>
+</main>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<div class="scrim" id="modal" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <h2 id="mTitle"></h2>
+    <p id="mBody"></p>
+    <div class="row">
+      <button id="mCancel">Cancel</button>
+      <button id="mOk" class="primary">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ------------------------------------------------------------
+     ONE MILLION WINS
+     Everything is stored in this browser's IndexedDB on this device.
+     No network, no accounts, no cloud, no Claude.
+     Records are only ever removed by "Undo last win" after confirmation.
+     ------------------------------------------------------------ */
+
+  const DB_NAME = 'OneMillionWinsDB';
+  const DB_VERSION = 1;
+  const STORE = 'wins';
+  const GOAL = 1000000;
+  const LS_BACKUP = 'omw_last_backup';
+
+  const $ = id => document.getElementById(id);
+  const el = {
+    count: $('count'), fill: $('fill'), bar: $('bar'), pct: $('pct'),
+    today: $('today'), alltime: $('alltime'), win: $('win'),
+    undo: $('undo'), exp: $('export'), imp: $('import'), file: $('file'),
+    status: $('status'), statusText: $('statusText'), lastBackup: $('lastBackup'),
+    toast: $('toast'), modal: $('modal'), mTitle: $('mTitle'), mBody: $('mBody'),
+    mOk: $('mOk'), mCancel: $('mCancel'), hero: document.querySelector('.hero')
+  };
+
+  let db = null;
+  let ready = false;
+  let total = 0;
+  let today = 0;
+  let currentDay = dayKey(new Date());
+
+  /* ---------- helpers ---------- */
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function dayKey(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function fmt(n) { return Number(n).toLocaleString('en-US'); }
+  function newId() {
+    let rand = '';
+    try {
+      if (crypto && crypto.randomUUID) return crypto.randomUUID();
+      const a = new Uint32Array(3); crypto.getRandomValues(a);
+      rand = Array.from(a, x => x.toString(16).padStart(8, '0')).join('');
+    } catch (e) {
+      for (let i = 0; i < 3; i++) rand += Math.floor(Math.random() * 4294967296).toString(16).padStart(8, '0');
+    }
+    return Date.now().toString(36) + '-' + rand;
+  }
+  function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* settings only; safe to ignore */ } }
+
+  function validRecord(r) {
+    return !!r && typeof r.id === 'string' && r.id.length > 0 && r.id.length <= 100 &&
+      typeof r.ts === 'string' && !isNaN(new Date(r.ts).getTime()) &&
+      typeof r.day === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(r.day);
+  }
+
+  /* ---------- IndexedDB ---------- */
+  function openDB() {
+    return new Promise((resolve, reject) => {
+      if (!window.indexedDB) return reject(new Error('This browser has no IndexedDB storage.'));
+      let req;
+      try { req = indexedDB.open(DB_NAME, DB_VERSION); } catch (e) { return reject(e); }
+      req.onupgradeneeded = () => {
+        const d = req.result;
+        if (!d.objectStoreNames.contains(STORE)) {
+          const s = d.createObjectStore(STORE, { keyPath: 'id' });
+          s.createIndex('day', 'day');
+          s.createIndex('ts', 'ts');
+        }
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error || new Error('Could not open storage.'));
+      req.onblocked = () => reject(new Error('Storage is blocked by another open tab. Close other tabs and reload.'));
+    });
+  }
+  function reqP(r) {
+    return new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+  }
+  function writeTx(fn) {
+    // Resolves only when the transaction has fully committed to disk.
+    return new Promise((resolve, reject) => {
+      let tx;
+      try { tx = db.transaction(STORE, 'readwrite', { durability: 'strict' }); }
+      catch (e) { tx = db.transaction(STORE, 'readwrite'); }
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error || new Error('Write failed.'));
+      tx.onabort = () => reject(tx.error || new Error('Write was cancelled.'));
+      fn(tx.objectStore(STORE));
+    });
+  }
+  const store = () => db.transaction(STORE).objectStore(STORE);
+  const countAll = () => reqP(store().count());
+  const countDay = d => reqP(store().index('day').count(IDBKeyRange.only(d)));
+  const getAll = () => reqP(store().getAll());
+  const getAllKeys = () => reqP(store().getAllKeys());
+  function latest() {
+    return new Promise((res, rej) => {
+      const r = store().index('ts').openCursor(null, 'prev');
+      r.onsuccess = () => res(r.result ? r.result.value : null);
+      r.onerror = () => rej(r.error);
+    });
+  }
+
+  /* serialise all changes so rapid taps can never interleave */
+  let chain = Promise.resolve();
+  function enqueue(fn) {
+    const p = chain.then(fn);
+    chain = p.then(() => {}, () => {});
+    return p;
+  }
+
+  /* ---------- UI ---------- */
+  function render(celebrate) {
+    el.count.textContent = fmt(total);
+    const len = el.count.textContent.length;
+    el.count.className = 'count' + (len > 7 ? ' l' : len > 5 ? ' m' : '');
+    el.today.textContent = fmt(today);
+    el.alltime.textContent = fmt(total);
+    const pct = Math.min(100, total / GOAL * 100);
+    el.pct.textContent = pct.toFixed(4) + '% complete';
+    el.fill.style.width = (total > 0 ? Math.max(pct, 0.6) : 0) + '%';
+    el.bar.setAttribute('aria-valuenow', String(total));
+    el.undo.disabled = !ready || total === 0;
+    if (celebrate) celebrateWin();
+  }
+  function celebrateWin() {
+    el.count.classList.remove('pulse'); void el.count.offsetWidth; el.count.classList.add('pulse');
+    el.win.classList.remove('flash'); void el.win.offsetWidth; el.win.classList.add('flash');
+    const f = document.createElement('div');
+    f.className = 'fly'; f.textContent = '+1';
+    f.addEventListener('animationend', () => f.remove());
+    el.hero.appendChild(f);
+    setTimeout(() => f.remove(), 1200);
+    try { if (navigator.vibrate) navigator.vibrate(12); } catch (e) { /* optional */ }
+  }
+  function setStatus(ok, msg) {
+    el.status.className = 'status' + (ok ? '' : ' bad');
+    el.statusText.textContent = ok ? 'Achievements saved on this device.' : (msg || 'Not saved. Export a backup now.');
+  }
+  let toastTimer = null;
+  function toast(text) {
+    el.toast.textContent = text; el.toast.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.toast.hidden = true; }, 4200);
+  }
+  function renderBackupLine() {
+    const iso = lsGet(LS_BACKUP);
+    const d = iso ? new Date(iso) : null;
+    el.lastBackup.textContent = d && !isNaN(d)
+      ? 'Last backup: ' + d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
+      : 'No backup yet. Export one to keep a copy off this browser.';
+  }
+  function ask({ title, body, ok = 'Confirm', cancel = 'Cancel', danger = false }) {
+    return new Promise(resolve => {
+      el.mTitle.textContent = title; el.mBody.textContent = body;
+      el.mOk.textContent = ok; el.mCancel.textContent = cancel;
+      el.mOk.className = danger ? 'danger' : 'primary';
+      el.modal.hidden = false; el.mCancel.focus();
+      const done = v => {
+        el.modal.hidden = true;
+        el.mOk.onclick = el.mCancel.onclick = null;
+        document.removeEventListener('keydown', onKey);
+        resolve(v);
+      };
+      const onKey = e => { if (e.key === 'Escape') done(false); };
+      document.addEventListener('keydown', onKey);
+      el.mOk.onclick = () => done(true);
+      el.mCancel.onclick = () => done(false);
+    });
+  }
+
+  /* ---------- core actions ---------- */
+  async function refreshCounts() {
+    currentDay = dayKey(new Date());
+    total = await countAll();
+    today = await countDay(currentDay);
+    render(false);
+  }
+
+  function recordWin() {
+    if (!ready) return;
+    const now = new Date();
+    const rec = { id: newId(), ts: now.toISOString(), day: dayKey(now), tz: -now.getTimezoneOffset(), v: 1 };
+    enqueue(async () => {
+      await writeTx(s => s.add(rec));            // committed before we count it
+      total += 1;
+      if (rec.day === currentDay) today += 1; else { await refreshCounts(); }
+      render(true);
+      setStatus(true);
+    }).catch(err => {
+      console.error(err);
+      setStatus(false, 'NOT SAVED: ' + (err && err.message ? err.message : 'storage error') + '. Export a backup.');
+      toast('That win could not be saved. Please try again.');
+    });
+  }
+
+  async function undoLast() {
+    if (!ready) return;
+    let rec;
+    try { rec = await latest(); } catch (e) { return toast('Could not read your records.'); }
+    if (!rec) return toast('Nothing to undo.');
+    const when = new Date(rec.ts).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+    const yes = await ask({
+      title: 'Remove your latest victory?',
+      body: 'This removes the win recorded on ' + when + '.\nUse this only for an accidental tap. It cannot be restored unless you have a backup.',
+      ok: 'Remove it', cancel: 'Keep it', danger: true
+    });
+    if (!yes) return;
+    enqueue(async () => {
+      await writeTx(s => s.delete(rec.id));
+      await refreshCounts();
+      setStatus(true);
+      toast('Latest victory removed.');
+    }).catch(err => { console.error(err); toast('Could not remove it. Nothing was changed.'); });
+  }
+
+  /* ---------- backup ---------- */
+  async function exportBackup() {
+    if (!ready) return;
+    try {
+      const all = await getAll();
+      const good = [], bad = [];
+      for (const r of all) (validRecord(r) ? good : bad).push(r);
+      good.sort((a, b) => a.ts < b.ts ? -1 : a.ts > b.ts ? 1 : 0);
+      const daily = {};
+      const achievements = good.map(r => {
+        daily[r.day] = (daily[r.day] || 0) + 1;
+        return { id: r.id, timestamp: r.ts, date: r.day, tzOffsetMinutes: typeof r.tz === 'number' ? r.tz : null };
+      });
+      const dailyTotals = {};
+      Object.keys(daily).sort().forEach(k => { dailyTotals[k] = daily[k]; });
+      const out = {
+        app: 'ONE MILLION WINS',
+        format: 1,
+        exportedAt: new Date().toISOString(),
+        goal: GOAL,
+        lifetimeVictories: achievements.length,
+        dailyTotals,
+        achievements
+      };
+      if (bad.length) out.unreadableRecords = bad;   // never silently dropped
+
+      const now = new Date();
+      const name = 'one-million-wins-backup-' + dayKey(now) + '_' + pad(now.getHours()) + pad(now.getMinutes()) +
+        '-' + achievements.length + 'wins.json';
+      const blob = new Blob([JSON.stringify(out)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = name; a.hidden = true;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 15000);
+
+      lsSet(LS_BACKUP, now.toISOString());
+      renderBackupLine();
+      toast('Backup saved: ' + fmt(achievements.length) + ' victories.' + (bad.length ? ' ' + bad.length + ' unreadable record(s) included separately.' : ''));
+    } catch (err) {
+      console.error(err);
+      toast('Backup failed. Your achievements are untouched. Please try again.');
+    }
+  }
+
+  function readFile(file) {
+    return new Promise((res, rej) => {
+      const fr = new FileReader();
+      fr.onload = () => res(String(fr.result));
+      fr.onerror = () => rej(fr.error || new Error('Could not read the file.'));
+      fr.readAsText(file);
+    });
+  }
+
+  function parseBackup(text) {
+    let data;
+    try { data = JSON.parse(text); } catch (e) { throw new Error('That file is not valid JSON.'); }
+    if (!data || typeof data !== 'object' || data.app !== 'ONE MILLION WINS' || !Array.isArray(data.achievements)) {
+      throw new Error('That is not a ONE MILLION WINS backup file.');
+    }
+    const seen = new Set(), valid = [];
+    let invalid = 0;
+    for (const a of data.achievements) {
+      if (!a || typeof a.id !== 'string' || !a.id || a.id.length > 100 || typeof a.timestamp !== 'string') { invalid++; continue; }
+      const t = new Date(a.timestamp);
+      if (isNaN(t.getTime())) { invalid++; continue; }
+      if (seen.has(a.id)) continue;               // duplicate inside the file itself
+      seen.add(a.id);
+      const day = (typeof a.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(a.date)) ? a.date : dayKey(t);
+      const tz = (typeof a.tzOffsetMinutes === 'number' && isFinite(a.tzOffsetMinutes)) ? a.tzOffsetMinutes : -t.getTimezoneOffset();
+      valid.push({ id: a.id, ts: t.toISOString(), day, tz, v: 1 });
+    }
+    if (valid.length === 0) throw new Error('That backup contains no valid achievements.');
+    return { valid, invalid, declared: data.lifetimeVictories };
+  }
+
+  async function importBackup(file) {
+    if (!ready || !file) return;
+    try {
+      const { valid, invalid, declared } = parseBackup(await readFile(file));
+      const existing = new Set(await getAllKeys());
+      const fresh = valid.filter(r => !existing.has(r.id));
+      const already = valid.length - fresh.length;
+
+      if (fresh.length === 0) {
+        return toast('Nothing new. All ' + fmt(valid.length) + ' victories in this file are already here.');
+      }
+      let body = fmt(fresh.length) + ' new victories will be added.\n' +
+        (already ? fmt(already) + ' are already here and will be skipped.\n' : '') +
+        'Nothing you already have will be changed or deleted.';
+      if (invalid) body += '\n' + fmt(invalid) + ' unreadable entries in the file will be ignored.';
+      if (typeof declared === 'number' && declared !== valid.length + invalid) body += '\nNote: the file\u2019s own total does not match its contents.';
+
+      const yes = await ask({ title: 'Add these victories?', body, ok: 'Add them', cancel: 'Cancel' });
+      if (!yes) return;
+
+      await enqueue(async () => {
+        await writeTx(s => { for (const r of fresh) s.add(r); });   // all-or-nothing
+        await refreshCounts();
+        setStatus(true);
+      });
+      toast('Restored ' + fmt(fresh.length) + ' victories.');
+    } catch (err) {
+      console.error(err);
+      toast(err && err.message ? err.message : 'Import failed. Nothing was changed.');
+    }
+  }
+
+  /* ---------- start ---------- */
+  async function checkDay() {
+    if (ready && dayKey(new Date()) !== currentDay) {
+      try { await enqueue(refreshCounts); } catch (e) { /* ignore */ }
+    }
+  }
+
+  async function init() {
+    renderBackupLine();
+    try {
+      db = await openDB();
+      db.onversionchange = () => { db.close(); ready = false; setStatus(false, 'Storage was closed by another tab. Reload this page.'); };
+      await refreshCounts();
+      ready = true;
+      el.win.disabled = el.exp.disabled = el.imp.disabled = false;
+      render(false);
+      setStatus(true);
+      try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) { /* optional */ }
+    } catch (err) {
+      console.error(err);
+      setStatus(false, 'Storage unavailable: ' + (err && err.message ? err.message : 'unknown error') +
+        ' Private/incognito windows cannot keep achievements.');
+    }
+    document.body.dataset.ready = ready ? '1' : 'error';
+  }
+
+  el.win.addEventListener('click', recordWin);
+  el.undo.addEventListener('click', undoLast);
+  el.exp.addEventListener('click', exportBackup);
+  el.imp.addEventListener('click', () => el.file.click());
+  el.file.addEventListener('change', e => {
+    const f = e.target.files && e.target.files[0];
+    if (f) importBackup(f);
+    try { e.target.value = ''; } catch (err) { /* ignore */ }
+  });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) checkDay(); });
+  setInterval(checkDay, 30000);
+
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
