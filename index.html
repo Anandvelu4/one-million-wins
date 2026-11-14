@@ -53,6 +53,7 @@
   }
   .count.m{font-size:min(7rem,19vw)}
   .count.l{font-size:min(5.5rem,13.5vw)}
+  .count.neg{color:var(--coral)}
   .count.pulse{animation:pulse .5s cubic-bezier(.2,.8,.2,1)}
   @keyframes pulse{
     0%{transform:scale(1);color:var(--ivory)}
@@ -125,7 +126,7 @@
   .toast{
     position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);
     background:var(--slate);border:1px solid var(--line);color:var(--ivory);
-    padding:12px 18px;border-radius:12px;font-size:.9rem;max-width:90vw;text-align:center;z-index:20;
+    padding:12px 18px;border-radius:12px;font-size:.9rem;max-width:90vw;text-align:center;z-index:40;
   }
   .scrim{position:fixed;inset:0;background:rgba(4,6,12,.72);display:flex;align-items:center;justify-content:center;padding:24px;z-index:30}
   .dialog{background:var(--slate);border:1px solid var(--line);border-radius:18px;padding:24px;max-width:400px;width:100%;max-height:85vh;overflow:auto}
@@ -136,6 +137,62 @@
   .dialog button.primary{background:var(--gold);border-color:var(--gold);color:#1a1405}
   .dialog button.danger{background:var(--coral);border-color:var(--coral);color:#2a0d08}
 
+
+  /* ---- protection add-on ---- */
+  .modebar{text-align:center;margin-top:12px;font-size:.78rem;color:var(--mist);white-space:pre-line}
+  .modebar .sub{margin-top:8px;line-height:1.5}
+  .chip{display:inline-block;padding:4px 12px;border-radius:99px;border:1px solid var(--line);letter-spacing:.14em;font-weight:700;font-size:.7rem}
+  .chip.sleep{color:#9db0ff;border-color:#33407a}
+  .chip.awake{color:#7bd6a3;border-color:#2b5c46}
+  .chip.alert{color:#1a0b08;background:var(--coral);border-color:var(--coral)}
+  .sos{width:100%;margin-top:12px;border:0;border-radius:18px;padding:20px;background:#e5604f;color:#fff;font:inherit;font-weight:800;font-size:1.05rem;letter-spacing:.04em;cursor:pointer;touch-action:manipulation}
+  .sos:active{transform:scale(.97)}
+  .sos.alert{animation:sosPulse 1.8s infinite}
+  @keyframes sosPulse{0%{box-shadow:0 0 0 0 rgba(229,96,79,.6)}100%{box-shadow:0 0 0 18px rgba(229,96,79,0)}}
+  .sheet{position:fixed;inset:0;background:var(--midnight);z-index:15;overflow:auto;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+  .sheet-in{max-width:520px;margin:0 auto;padding:18px 22px 48px}
+  .sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+  .sheet-head h2{font-family:var(--serif);font-weight:400;font-size:1.35rem}
+  .xbtn{background:transparent;border:1px solid var(--line);color:var(--mist);font:inherit;font-size:.85rem;padding:8px 14px;border-radius:99px;cursor:pointer}
+  .sheet h3{font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mist);margin:26px 0 10px;font-weight:600}
+  .lead{color:var(--ivory);line-height:1.55;margin:10px 0 16px;white-space:pre-line}
+  .note{color:var(--mist);font-size:.82rem;line-height:1.5;margin:8px 0}
+  .warn{color:#e9c9a0;font-size:.82rem;line-height:1.5;margin:12px 0;padding:10px 12px;border:1px solid #5a4630;border-radius:10px}
+  .eyebrow{color:var(--gold);letter-spacing:.16em;font-size:.75rem;font-weight:700;margin-bottom:10px;text-align:center}
+  .bigbtn{display:block;width:100%;margin-top:14px;padding:20px;border:0;border-radius:18px;background:var(--slate);border:1px solid var(--line);color:var(--ivory);font:inherit;font-weight:800;font-size:1.05rem;letter-spacing:.03em;cursor:pointer;touch-action:manipulation}
+  .bigbtn.go{background:linear-gradient(180deg,var(--gold),var(--gold-deep));color:#1a1405;border:0}
+  .bigbtn.alt{background:transparent}
+  .bigbtn:disabled{opacity:.35;cursor:not-allowed}
+  .bigbtn:active{transform:scale(.98)}
+  .clock{font-family:var(--serif);font-size:min(5.5rem,20vw);text-align:center;margin:18px 0;font-variant-numeric:tabular-nums}
+  .clock.up{color:var(--coral);font-size:2.2rem}
+  .reps{font-family:var(--serif);font-size:min(5rem,18vw);text-align:center;margin:12px 0;font-variant-numeric:tabular-nums}
+  .exname{font-weight:800;font-size:1.3rem;text-align:center;margin-top:18px;letter-spacing:.03em}
+  .ask{font-family:var(--serif);font-size:1.9rem;text-align:center;margin:40px 0 18px;line-height:1.25}
+  .bar.big{height:8px}
+  .steps{margin:8px 0}
+  .step{display:flex;gap:12px;align-items:center;padding:14px;margin-top:10px;background:var(--slate);border:1px solid var(--line);border-radius:14px;line-height:1.4;cursor:pointer}
+  .step input,.row2 input[type=checkbox]{width:22px;height:22px;accent-color:var(--gold);flex:none}
+  .week{display:flex;gap:8px}
+  .dayc{flex:1;text-align:center;padding:8px 0;border-radius:10px;background:var(--slate);border:1px solid var(--line);font-size:.8rem;color:var(--mist)}
+  .dayc b{display:block;font-weight:600;margin-bottom:4px}
+  .dayc span{font-size:1.1rem}
+  .dayc.on-time{color:#7bd6a3;border-color:#2b5c46}.dayc.late{color:var(--gold)}.dayc.timeout,.dayc.open{color:var(--coral)}
+  .hist .hrow{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:.85rem;color:var(--mist)}
+  .h-on-time{color:#7bd6a3}.h-late{color:var(--gold)}.h-timeout,.h-open{color:var(--coral)}
+  .card{background:var(--slate);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+  .kv{display:flex;justify-content:space-between;gap:10px;padding:6px 0;font-size:.88rem;color:var(--mist)}
+  .kv b{color:var(--ivory);font-weight:600;text-align:right}
+  .btnrow{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+  .row2{display:flex;align-items:center;gap:10px;padding:8px 0;color:var(--mist);font-size:.9rem}
+  .row2 .grow{flex:1;color:var(--ivory)}
+  .tin{background:var(--slate);color:var(--ivory);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:inherit;font-size:.95rem}
+  .grid21{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:14px 0}
+  .tile{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:10px;background:var(--slate);border:1px solid var(--line);color:var(--mist);font-size:.9rem}
+  .tile.hard{border-color:var(--coral);color:var(--coral);font-weight:700}
+  .tile.past{opacity:.45}
+  .tile.now{background:var(--gold);color:#1a1405;border-color:var(--gold);font-weight:800}
+
   @media (prefers-reduced-motion:reduce){
     *{animation:none !important;transition:none !important}
   }
@@ -144,6 +201,7 @@
 <body>
 <main>
   <div class="brand">ONE MILLION WINS</div>
+  <div class="modebar" id="modebar"></div>
 
   <section class="hero" aria-live="polite">
     <div class="count" id="count">0</div>
@@ -167,12 +225,20 @@
     <span class="plus">+1</span>
   </button>
 
+  <button class="sos" id="sos">I'M ABOUT TO GIVE IN</button>
+
   <div class="tools">
     <button class="tool" id="undo" disabled>Undo last win</button>
     <button class="tool" id="rewards" disabled>Bonuses</button>
     <button class="tool" id="export" disabled>EXPORT BACKUP</button>
     <button class="tool" id="import" disabled>IMPORT BACKUP</button>
     <input type="file" id="file" accept=".json,application/json" hidden>
+  </div>
+
+  <div class="tools">
+    <button class="tool" id="openChallenge">Get out of bed</button>
+    <button class="tool" id="openRemind">Reminders</button>
+    <button class="tool" id="openProt">21-day protection</button>
   </div>
 
   <div class="lapse">
@@ -184,6 +250,11 @@
     <div id="lastBackup"></div>
   </div>
 </main>
+
+<div class="sheet" id="sh-sos" hidden></div>
+<div class="sheet" id="sh-chal" hidden></div>
+<div class="sheet" id="sh-remind" hidden></div>
+<div class="sheet" id="sh-prot" hidden></div>
 
 <div class="toast" id="toast" role="status" hidden></div>
 
@@ -410,7 +481,7 @@
     const rows = [];
     for (const d of fresh) {
       let pts = d.points;
-      if (pts < 0) pts = -Math.min(-pts, Math.max(run, 0));      // a penalty never takes you below 0
+      // penalties apply in full; the score is allowed to go below zero
       run += pts;
       rows.push({ id: d.id, ts: d.ts.toISOString(), day: dayKey(d.ts), points: pts, kind: d.kind, label: d.label, v: 1 });
     }
@@ -462,7 +533,7 @@
   function render(celebrate) {
     el.count.textContent = fmt(total);
     const len = el.count.textContent.length;
-    el.count.className = 'count' + (len > 7 ? ' l' : len > 5 ? ' m' : '');
+    el.count.className = 'count' + (len > 7 ? ' l' : len > 5 ? ' m' : '') + (total < 0 ? ' neg' : '');
     el.today.textContent = fmt(today);
     el.alltime.textContent = fmt(total);
     const pct = Math.min(100, total / GOAL * 100);
@@ -470,7 +541,7 @@
     el.fill.style.width = (total > 0 ? Math.max(pct, 0.6) : 0) + '%';
     el.bar.setAttribute('aria-valuenow', String(total));
     el.undo.disabled = !ready || winCount === 0;
-    el.gave.disabled = !ready || total === 0;
+    el.gave.disabled = !ready;
     if (celebrate) celebrateWin();
   }
   function celebrateWin() {
@@ -579,24 +650,24 @@
   }
 
   async function gaveIn() {
-    if (!ready || total === 0) return;
-    const n = Math.min(4, total);
+    if (!ready) return;
+    const n = 4;                                   // a slip always costs 4; the score may go below zero
     let streak = 1;
     try { streak = await nextSlipStreak(); } catch (e) { /* treat as 1 */ }
-    const pen = streak >= RULES.streakFrom ? Math.min(RULES.streakPenalty, Math.max(total - n, 0)) : 0;
+    const pen = streak >= RULES.streakFrom ? RULES.streakPenalty : 0;
     const yes = await ask({
       title: 'Deduct your last ' + (n === 1 ? 'point' : n + ' points') + '?',
       body: 'You gave in, so ' + (n === 1 ? '1 point is' : n + ' points are') + ' removed.' +
         (streak >= RULES.streakFrom ? '\nThis is slip ' + streak + ' in a row with no victory in between. An extra \u2212' + pen + ' applies.' : '') +
+        (total - n - pen < 0 ? '\nThis takes your score below zero.' : '') +
         '\nThis is permanent. It cannot be undone, and restoring a backup will not bring ' + (n === 1 ? 'it' : 'them') + ' back.',
       ok: 'Yes, deduct ' + (n + pen), cancel: 'Cancel', danger: true
     });
     if (!yes) return;
     enqueue(async () => {
-      const take = Math.min(4, total);
-      if (take <= 0) return;
+      const take = 4;
       const st = await nextSlipStreak();
-      const extraPen = st >= RULES.streakFrom ? Math.min(RULES.streakPenalty, Math.max(total - take, 0)) : 0;
+      const extraPen = st >= RULES.streakFrom ? RULES.streakPenalty : 0;
       const recent = await lastN(take);                 // newest win records first
       const extra = take - recent.length;               // remainder comes off earned bonus points
       const now = new Date();
@@ -643,6 +714,7 @@
         adjustments: adjRows.map(a => ({ id: a.id, timestamp: a.ts, date: a.day, points: a.points, kind: a.kind || '', label: a.label || '' }))
       };
       if (bad.length) out.unreadableRecords = bad;   // never silently dropped
+      try { if (window.OMWPlus) out.plus = window.OMWPlus.exportData(); } catch (e) { /* optional add-on data */ }
 
       const now = new Date();
       const name = 'one-million-wins-backup-' + dayKey(now) + '_' + pad(now.getHours()) + pad(now.getMinutes()) +
@@ -714,13 +786,13 @@
     let trackingStartTs = null;
     if (typeof data.trackingStart === 'string' && !isNaN(new Date(data.trackingStart).getTime())) trackingStartTs = new Date(data.trackingStart).toISOString();
     if (valid.length === 0 && lapses.length === 0 && adjustments.length === 0) throw new Error('That backup contains no valid achievements.');
-    return { valid, invalid, declared: typeof data.victoryRecords === 'number' ? data.victoryRecords : data.lifetimeVictories, lapses, adjustments, trackingStartTs };
+    return { valid, invalid, declared: typeof data.victoryRecords === 'number' ? data.victoryRecords : data.lifetimeVictories, lapses, adjustments, trackingStartTs, plus: data.plus };
   }
 
   async function importBackup(file) {
     if (!ready || !file) return;
     try {
-      const { valid, invalid, declared, lapses, adjustments, trackingStartTs } = parseBackup(await readFile(file));
+      const { valid, invalid, declared, lapses, adjustments, trackingStartTs, plus } = parseBackup(await readFile(file));
       const localLapses = await getAllLapses();
       const knownLapse = new Set(localLapses.map(l => l.id));
       const newLapses = lapses.filter(l => !knownLapse.has(l.id));
@@ -768,6 +840,7 @@
       });
       toast('Restored ' + fmt(fresh.length) + ' ' + vic(fresh.length) + (newAdj.length ? ' and ' + newAdj.length + ' bonus/penalty ' + (newAdj.length === 1 ? 'entry' : 'entries') : '') + '.');
       enqueue(evaluateRewards).catch(e => console.error(e));
+      try { if (plus && window.OMWPlus) window.OMWPlus.importData(plus); } catch (e) { console.error(e); }
     } catch (err) {
       console.error(err);
       toast(err && err.message ? err.message : 'Import failed. Nothing was changed.');
@@ -816,10 +889,610 @@
   setInterval(checkDay, 30000);
 
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
-    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').then(r => r.update()).catch(() => {}));
   }
 
+  window.__omw = { recordWin, toast, ask, isReady: () => ready };
+
   init();
+})();
+</script>
+<script>
+(() => {
+  'use strict';
+
+  /* ------------------------------------------------------------------
+     ONE MILLION WINS - PROTECTION ADD-ON
+     Reminders, Get-Out-Of-Bed challenge, Emergency Urge Mode,
+     Weekend high-alert, 21-day protection, sleep-aware modes.
+     Uses only localStorage for its own data. It never touches the
+     achievements database (IndexedDB) except by calling the existing
+     recordWin() when you answer YES in Emergency Mode.
+     ------------------------------------------------------------------ */
+
+  const KEY_S = 'omw_plus_settings', KEY_H = 'omw_plus_hist', KEY_F = 'omw_plus_fired', KEY_C = 'omw_plus_chal';
+  const DAY_START = 5;                         // protection / weekend "days" roll over at 5:00 AM
+  const HARD = [2, 3, 4, 7];                   // 21-day protection high-alert days
+  const T = { restSec: 30, cooldownSec: 600, challengeSec: 300 };   // durations (tests may shorten)
+  const STRONG = 'Move now. Change rooms. If the urge is here, open Emergency Mode.';
+  const ROT = ['Drink water.', 'Get out of your room.', 'Complete 10 push-ups.', 'Complete 20 squats.',
+    'Practise piano for 10 minutes.', 'Read for 10 minutes.', 'Go for a walk.',
+    'Avoid lying in bed with your phone.', 'Check whether you are experiencing an urge.'];
+  const EX = [{ n: '10 PUSH-UPS', r: 10 }, { n: '20 BODYWEIGHT SQUATS', r: 20 }, { n: '30 JUMPING JACKS', r: 30 }];
+  const ACTIVITIES = ['Drink water and wash your face', 'Go for a walk', 'Practise piano for 10 minutes', 'Read for 10 minutes', 'Leave your room and change environment'];
+
+  const $ = id => document.getElementById(id);
+  const pad = n => String(n).padStart(2, '0');
+  const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  const lsSet = (k, v) => { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } };
+  const lsDel = k => { try { localStorage.removeItem(k); } catch (e) { /* ignore */ } };
+  const jget = (k, d) => { try { const v = lsGet(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } };
+  const jset = (k, v) => lsSet(k, JSON.stringify(v));
+  const dayKey = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  const startOfDay = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+  const validTime = t => typeof t === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(t);
+  const mins = t => { const [a, b] = t.split(':'); return +a * 60 + +b; };
+  const at = (d, t) => { const [a, b] = t.split(':'); return new Date(d.getFullYear(), d.getMonth(), d.getDate(), +a, +b, 0, 0); };
+  const clock = ms => { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(s / 60) + ':' + pad(s % 60); };
+  const fmtTime = ms => new Date(ms).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+  const toast = t => { try { window.__omw.toast(t); } catch (e) { /* ignore */ } };
+
+  function h(tag, props = {}, ...kids) {
+    const e = document.createElement(tag);
+    for (const [k, v] of Object.entries(props)) {
+      if (k === 'class') e.className = v;
+      else if (k === 'text') e.textContent = v;
+      else if (k === 'checked' || k === 'value' || k === 'disabled') e[k] = v;
+      else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+      else if (v !== false && v != null) e.setAttribute(k, v === true ? '' : v);
+    }
+    for (const c of kids.flat(Infinity)) { if (c == null || c === false) continue; e.append(c.nodeType ? c : document.createTextNode(String(c))); }
+    return e;
+  }
+
+  /* ---------------- settings ---------------- */
+  const DEFAULT_REMINDERS = () => [
+    { id: 'pre-0500', group: 'pre', time: '05:00', on: true, title: 'Check yourself', body: "Don't give in." },
+    { id: 'pre-0600', group: 'pre', time: '06:00', on: true, title: 'Drink water', body: '' },
+    { id: 'pre-0700', group: 'pre', time: '07:00', on: true, title: 'Put your phone away', body: 'Prepare for sleep.' },
+    { id: 'post-1400', group: 'post', time: '14:00', on: true, title: 'GET OUT OF BED CHALLENGE', body: "WAKE UP. DON'T NEGOTIATE WITH YOUR BED. YOUR FIRST VICTORY STARTS NOW.", open: '#challenge-start', exact: true },
+    { id: 'post-1405', group: 'post', time: '14:05', on: true, title: 'Drink water and wash your face', body: '' },
+    { id: 'post-1415', group: 'post', time: '14:15', on: true, title: '10 push-ups', body: '' },
+    { id: 'post-1420', group: 'post', time: '14:20', on: true, title: '20 squats', body: '' },
+    { id: 'post-1500', group: 'post', time: '15:00', on: true, title: 'Leave your bedroom', body: '' },
+    { id: 'post-1600', group: 'post', time: '16:00', on: true, title: 'Do something productive', body: '' },
+    { id: 'post-1700', group: 'post', time: '17:00', on: true, title: 'Check your urges', body: '' }
+  ];
+  const DEFAULTS = () => ({
+    on: true,
+    sleep: { weekday: { start: '07:30', end: '14:00' }, weekend: { start: '07:30', end: '14:00' } },
+    vulnerable: { start: '14:00', end: '17:20' },
+    weekendAlerts: { on: true, every: 2 },
+    reminders: DEFAULT_REMINDERS(),
+    protection: { active: false, start: null, extended: false, decided: false }
+  });
+  function sanitize(raw) {
+    const d = DEFAULTS();
+    if (!raw || typeof raw !== 'object') return d;
+    if (raw.on === false) d.on = false;
+    for (const k of ['weekday', 'weekend']) {
+      const s = raw.sleep && raw.sleep[k];
+      if (s && validTime(s.start) && validTime(s.end)) d.sleep[k] = { start: s.start, end: s.end };
+    }
+    if (raw.vulnerable && validTime(raw.vulnerable.start) && validTime(raw.vulnerable.end)) d.vulnerable = { start: raw.vulnerable.start, end: raw.vulnerable.end };
+    if (raw.weekendAlerts) {
+      if (raw.weekendAlerts.on === false) d.weekendAlerts.on = false;
+      if ([1, 2, 3, 4, 6].includes(raw.weekendAlerts.every)) d.weekendAlerts.every = raw.weekendAlerts.every;
+    }
+    if (Array.isArray(raw.reminders)) {
+      for (const r of d.reminders) {
+        const s = raw.reminders.find(x => x && x.id === r.id);
+        if (s) { if (validTime(s.time)) r.time = s.time; if (s.on === false) r.on = false; }
+      }
+    }
+    const p = raw.protection;
+    if (p && typeof p === 'object') {
+      d.protection = { active: !!p.active, start: /^\d{4}-\d{2}-\d{2}$/.test(p.start || '') ? p.start : null, extended: !!p.extended, decided: !!p.decided };
+      if (!d.protection.start) d.protection.active = false;
+    }
+    return d;
+  }
+  let S = sanitize(jget(KEY_S, null));
+  const saveS = () => { jset(KEY_S, S); };
+
+  const hist = () => { const x = jget(KEY_H, null) || {}; return { challenges: Array.isArray(x.challenges) ? x.challenges : [], emergencies: Array.isArray(x.emergencies) ? x.emergencies : [] }; };
+  const saveHist = x => { if (x.challenges.length > 400) x.challenges = x.challenges.slice(-400); if (x.emergencies.length > 400) x.emergencies = x.emergencies.slice(-400); jset(KEY_H, x); };
+
+  /* ---------------- schedule engine ---------------- */
+  function sleepWindow(day, st) {
+    const dow = day.getDay();
+    const c = st.sleep[(dow === 0 || dow === 6) ? 'weekend' : 'weekday'];
+    const s = at(day, c.start);
+    let e = at(day, c.end);
+    if (e <= s) e = at(addDays(day, 1), c.end);          // window crosses midnight
+    return [s.getTime(), e.getTime()];
+  }
+  function inSleep(ts, st) {
+    for (let k = -1; k <= 0; k++) {
+      const [s, e] = sleepWindow(addDays(startOfDay(new Date(ts)), k), st);
+      if (ts >= s && ts < e) return true;
+    }
+    return false;
+  }
+  const shiftDay = ts => startOfDay(new Date(ts - DAY_START * 3600e3));
+  function protDay(ts, st) {
+    const p = st.protection;
+    if (!p.active || !p.start) return 0;
+    const [y, m, d] = p.start.split('-').map(Number);
+    const n = Math.round((shiftDay(ts) - new Date(y, m - 1, d)) / 864e5) + 1;
+    return n >= 1 ? n : 0;
+  }
+  function alertKind(ts, st) {                           // 'weekend' | 'hard' | null
+    const dow = shiftDay(ts).getDay();
+    if (dow === 6 || dow === 0) return 'weekend';       // Sat 05:00 -> Mon 05:00
+    const n = protDay(ts, st);
+    return HARD.includes(n) ? 'hard' : null;
+  }
+  function inVulnerable(ts, st) {
+    const d = new Date(ts), m = d.getHours() * 60 + d.getMinutes();
+    const a = mins(st.vulnerable.start), b = mins(st.vulnerable.end);
+    return a <= b ? (m >= a && m < b) : (m >= a || m < b);
+  }
+  function mode(ts, st) {
+    if (inSleep(ts, st)) return 'sleep';
+    if (alertKind(ts, st) || inVulnerable(ts, st)) return 'alert';
+    return 'awake';
+  }
+  function occurrences(from, to, st) {
+    const first = addDays(startOfDay(new Date(from)), -1), last = addDays(startOfDay(new Date(to)), 1);
+    let out = [];
+    for (let d = first; d <= last; d = addDays(d, 1)) {
+      for (const r of st.reminders) {
+        if (!r.on) continue;
+        const t = at(d, r.time).getTime();
+        if (t >= from && t <= to) out.push({ ts: t, id: r.id + '@' + dayKey(d), kind: r.group, r });
+      }
+    }
+    out = out.filter(o => !inSleep(o.ts, st));
+    const regular = out.slice();
+    const every = st.weekendAlerts.every * 3600e3;
+    for (let d = first; d <= last; d = addDays(d, 1)) {
+      const base = at(d, '05:00').getTime();
+      for (let t = base; t < base + 864e5; t += every) {
+        if (t < from || t > to) continue;
+        const k = alertKind(t, st);
+        if (!k || (k === 'weekend' && !st.weekendAlerts.on)) continue;
+        if (inSleep(t, st)) continue;
+        if (regular.some(o => Math.abs(o.ts - t) < 15 * 60e3)) continue;      // a regular reminder is already close by
+        out.push({ ts: t, id: 'alert@' + t, kind: 'alert', alertKind: k });
+      }
+    }
+    return out.sort((a, b) => a.ts - b.ts);
+  }
+  function message(o, st) {
+    const k = alertKind(o.ts, st);
+    if (o.kind === 'alert') {
+      return { title: (o.alertKind === 'hard' ? 'HIGH-ALERT DAY \u00b7 ' : 'HIGH-ALERT \u00b7 ') + 'ONE MILLION WINS', body: ROT[Math.floor(o.ts / (st.weekendAlerts.every * 3600e3)) % ROT.length], hash: '', strong: true };
+    }
+    const r = o.r;
+    let title = r.title, body = r.body || '';
+    if (k && !r.exact) { title = 'HIGH-ALERT \u00b7 ' + title; body = (body ? body + ' ' : '') + STRONG; }
+    return { title, body, hash: r.open || '', strong: !!k };
+  }
+
+  /* ---------------- notifications ---------------- */
+  const hasNotif = () => 'Notification' in window;
+  const perm = () => hasNotif() ? Notification.permission : 'unsupported';
+  const triggersSupported = () => hasNotif() && 'showTrigger' in Notification.prototype && typeof window.TimestampTrigger !== 'undefined';
+
+  async function showNotif(m, tag, extra) {
+    const opts = Object.assign({
+      body: m.body, tag, icon: 'icon-192.png', badge: 'icon-192.png', vibrate: [250, 120, 250],
+      data: { hash: m.hash || '' }, requireInteraction: !!m.strong,
+      actions: [{ action: 'emergency', title: "I'M ABOUT TO GIVE IN" }]
+    }, extra || {});
+    let reg = null;
+    try { reg = ('serviceWorker' in navigator) ? await navigator.serviceWorker.getRegistration() : null; } catch (e) { reg = null; }
+    if (reg && reg.showNotification) return reg.showNotification(m.title, opts);
+    delete opts.actions;
+    new Notification(m.title, opts);
+  }
+
+  function tick() {
+    if (!S.on || perm() !== 'granted') return;
+    const now = Date.now();
+    const due = occurrences(now - 10 * 60e3, now, S);
+    if (!due.length) return;
+    const fired = jget(KEY_F, {});
+    let changed = false;
+    for (const o of due) {
+      if (fired[o.id]) continue;
+      fired[o.id] = now; changed = true;
+      showNotif(message(o, S), o.id).catch(e => console.error(e));
+    }
+    if (changed) {
+      const keys = Object.keys(fired).sort((a, b) => fired[a] - fired[b]);
+      while (keys.length > 300) delete fired[keys.shift()];
+      jset(KEY_F, fired);
+    }
+  }
+  async function syncTriggers() {                       // only where the browser supports scheduled notifications
+    if (!triggersSupported() || perm() !== 'granted' || !S.on) return;
+    try {
+      const reg = await navigator.serviceWorker.getRegistration(); if (!reg) return;
+      const old = await reg.getNotifications({ includeTriggered: true });
+      old.filter(n => n.data && n.data.scheduled).forEach(n => n.close());
+      const now = Date.now();
+      for (const o of occurrences(now + 5000, now + 36 * 3600e3, S)) {
+        const m = message(o, S);
+        await reg.showNotification(m.title, { body: m.body, tag: o.id, icon: 'icon-192.png', badge: 'icon-192.png', data: { hash: m.hash, scheduled: true }, showTrigger: new window.TimestampTrigger(o.ts), actions: [{ action: 'emergency', title: "I'M ABOUT TO GIVE IN" }] });
+      }
+    } catch (e) { console.error(e); }
+  }
+
+  /* ---------------- sheets ---------------- */
+  let curSheet = null, onCloseHook = null, chalTimer = null, emTimer = null;
+  function openSheet(id) {
+    closeSheet(true);
+    curSheet = $(id); curSheet.hidden = false; document.body.style.overflow = 'hidden'; curSheet.scrollTop = 0;
+  }
+  function closeSheet(silent) {
+    clearInterval(chalTimer); clearInterval(emTimer);
+    if (onCloseHook) { const f = onCloseHook; onCloseHook = null; try { f(); } catch (e) { console.error(e); } }
+    if (curSheet) { curSheet.hidden = true; curSheet.replaceChildren(); curSheet = null; }
+    document.body.style.overflow = '';
+    if (!silent) renderMode();
+  }
+  const frame = (title, nodes) => h('div', { class: 'sheet-in' },
+    h('div', { class: 'sheet-head' }, h('h2', { text: title }), h('button', { class: 'xbtn', text: 'Close', 'aria-label': 'Close', onclick: () => closeSheet() })), nodes);
+
+  /* ---------------- mode bar ---------------- */
+  function renderMode() {
+    const now = Date.now(), m = mode(now, S), n = protDay(now, S);
+    const bar = $('modebar');
+    bar.replaceChildren();
+    const label = m === 'sleep' ? 'SLEEP MODE' : m === 'alert' ? 'HIGH-ALERT MODE' : 'AWAKE MODE';
+    bar.append(h('span', { class: 'chip ' + m, text: label }));
+    const hard = HARD.includes(n) && S.protection.active;
+    const wk = alertKind(now, S) === 'weekend';
+    let sub = '';
+    if (S.protection.active && n) sub = '21-day protection \u00b7 Day ' + n + (n > 21 ? ' (extended)' : ' of 21') + (hard ? ' \u00b7 HIGH-ALERT DAY' : '');
+    else if (wk) sub = 'Weekend high-alert until Monday 5:00 AM';
+    if (m !== 'sleep' && (hard || wk)) sub += (sub ? '\n' : '') + 'Move your body. Change rooms. Emergency Mode is one tap away.';
+    if (sub) bar.append(h('div', { class: 'sub', text: sub }));
+    $('sos').classList.toggle('alert', m === 'alert' || hard || wk);
+  }
+
+  /* ---------------- GET OUT OF BED challenge ---------------- */
+  const activeChal = () => { const a = jget(KEY_C, null); return a && Date.now() < a.endAt + 3 * 3600e3 ? a : null; };
+  function chalNormalize() {
+    const H = hist(), now = Date.now(); let ch = false;
+    for (const c of H.challenges) if (c.status === 'open' && now > c.endAt) { c.status = 'timeout'; ch = true; }
+    if (ch) saveHist(H);
+  }
+  function chalStart() {
+    const now = Date.now(), id = 'c' + now;
+    jset(KEY_C, { id, startedAt: now, endAt: now + T.challengeSec * 1000, steps: [false, false, false] });
+    const H = hist(); H.challenges.push({ id, startedAt: now, endAt: now + T.challengeSec * 1000, doneAt: null, status: 'open', secs: null }); saveHist(H);
+  }
+  function chalComplete() {
+    const a = activeChal(); if (!a) return;
+    const now = Date.now(), H = hist(), c = H.challenges.find(x => x.id === a.id);
+    if (c) { c.doneAt = now; c.secs = Math.round((now - c.startedAt) / 1000); c.status = now <= c.endAt ? 'on-time' : 'late'; }
+    saveHist(H); lsDel(KEY_C);
+    toast(c && c.status === 'on-time' ? 'Out of bed in ' + clock(c.secs * 1000) + '. That is a real win. (No urge victory added.)' : 'Out of bed. Late, but you did it.');
+  }
+  function chalStats() {
+    const list = hist().challenges, now = new Date(), best = {};
+    const rank = { 'on-time': 3, late: 2, timeout: 1, open: 1 };
+    for (const c of list) { const k = dayKey(new Date(c.startedAt)); if (!best[k] || rank[c.status] > rank[best[k].status]) best[k] = c; }
+    const days = [];
+    for (let i = 6; i >= 0; i--) { const d = addDays(startOfDay(now), -i); days.push({ d, c: best[dayKey(d)] || null }); }
+    const since = Date.now() - 30 * 864e5, recent = list.filter(c => c.startedAt >= since);
+    const onTime = recent.filter(c => c.status === 'on-time').length;
+    const done = list.filter(c => c.secs != null);
+    return { days, attempts: recent.length, onTime, avg: done.length ? Math.round(done.reduce((t, c) => t + c.secs, 0) / done.length) : null, today: best[dayKey(now)] || null };
+  }
+  const chalLabel = c => !c ? 'Not started' : c.status === 'on-time' ? 'On time \u00b7 ' + clock(c.secs * 1000) : c.status === 'late' ? 'Late \u00b7 ' + clock(c.secs * 1000) : 'Not completed';
+
+  function renderChal() {
+    clearInterval(chalTimer);
+    chalNormalize();
+    const box = $('sh-chal'); box.replaceChildren();
+    const act = activeChal(), nodes = [];
+    if (!act) {
+      nodes.push(h('p', { class: 'lead', text: 'Five minutes. Three steps. No negotiating.' }),
+        h('button', { class: 'bigbtn', id: 'chalStart', text: 'START 5-MINUTE CHALLENGE', onclick: () => { chalStart(); renderChal(); } }));
+    } else {
+      const names = ['STEP 1: SIT UP.', 'STEP 2: PUT YOUR FEET ON THE FLOOR AND STAND.', 'STEP 3: LEAVE YOUR BEDROOM.'];
+      const out = h('button', { class: 'bigbtn go', id: 'outBtn', text: "I'M OUT OF BED", disabled: !act.steps.every(Boolean), onclick: () => { chalComplete(); renderChal(); } });
+      nodes.push(h('div', { class: 'clock', id: 'chalClock', text: clock(act.endAt - Date.now()) }),
+        h('div', { class: 'steps' }, names.map((nm, i) => h('label', { class: 'step' },
+          h('input', { type: 'checkbox', class: 'chal-step', checked: act.steps[i], onchange: e => { const a = activeChal(); if (!a) return; a.steps[i] = e.target.checked; jset(KEY_C, a); out.disabled = !a.steps.every(Boolean); } }),
+          h('span', { text: nm })))),
+        out, h('p', { class: 'note', text: 'Tick all three steps to unlock the button. This does not add an urge victory.' }));
+    }
+    const st = chalStats();
+    nodes.push(h('h3', { text: 'Daily success' }),
+      h('p', { class: 'lead', id: 'chalToday', text: 'Today: ' + chalLabel(st.today) }),
+      h('div', { class: 'week' }, st.days.map(x => h('div', { class: 'dayc ' + (x.c ? x.c.status : 'none') },
+        h('b', { text: x.d.toLocaleDateString(undefined, { weekday: 'narrow' }) }), h('span', { text: !x.c ? '\u2013' : x.c.status === 'on-time' ? '\u2713' : x.c.status === 'late' ? '\u25d0' : '\u2717' })))),
+      h('p', { class: 'note', id: 'chalRate', text: st.attempts ? st.onTime + ' of ' + st.attempts + ' on time in the last 30 days (' + Math.round(100 * st.onTime / st.attempts) + '%)' + (st.avg != null ? ' \u00b7 average ' + clock(st.avg * 1000) : '') : 'No attempts yet.' }));
+    const hl = hist().challenges.slice(-12).reverse();
+    nodes.push(h('h3', { text: 'History' }), hl.length ? h('div', { class: 'hist', id: 'chalHist' }, hl.map(c => h('div', { class: 'hrow' },
+      h('span', { text: new Date(c.startedAt).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }) + ' ' + fmtTime(c.startedAt) }), h('span', { class: 'h-' + c.status, text: chalLabel(c) })))) : h('p', { class: 'note', text: 'Nothing yet.' }));
+    box.append(frame('Get out of bed', nodes));
+    if (act) { chalTimer = setInterval(updChal, 250); }
+  }
+  function updChal() {
+    const a = jget(KEY_C, null), el = $('chalClock'); if (!a || !el) return;
+    const left = a.endAt - Date.now();
+    if (left > 0) el.textContent = clock(left);
+    else { el.textContent = "TIME'S UP"; el.classList.add('up'); chalNormalize(); clearInterval(chalTimer); }
+  }
+  function openChallenge(autostart) {
+    openSheet('sh-chal');
+    if (autostart && !activeChal()) chalStart();
+    renderChal();
+  }
+
+  /* ---------------- EMERGENCY URGE MODE ---------------- */
+  let em = null;
+  function emLog(outcome) {
+    if (!em) return;
+    const H = hist(), e = H.emergencies.find(x => x.id === em.id);
+    if (e) { e.outcome = outcome; saveHist(H); }
+    em.logged = outcome;
+  }
+  function openSOS() {
+    const H = hist(), id = 'e' + Date.now();
+    H.emergencies.push({ id, ts: Date.now(), outcome: 'started' }); saveHist(H);
+    em = { id, phase: 'ex', i: 0, reps: 0, done: false, final: false, logged: 'started' };
+    openSheet('sh-sos');
+    onCloseHook = () => { if (em && !em.final && em.logged === 'started') emLog('closed-early'); em = null; };
+    renderSOS();
+  }
+  function emRun(endAt, onDone) {
+    clearInterval(emTimer);
+    const total = endAt - Date.now();
+    const upd = () => {
+      const left = endAt - Date.now();
+      const c = $('emClock'), f = $('emFill');
+      if (c) c.textContent = clock(left);
+      if (f) f.style.width = Math.min(100, Math.max(0, 100 * (1 - left / total))) + '%';
+      if (left <= 0) { clearInterval(emTimer); onDone(); }
+    };
+    emTimer = setInterval(upd, 250); upd();
+  }
+  const buzz = () => { try { if (navigator.vibrate) navigator.vibrate([300, 150, 300]); } catch (e) { /* optional */ } };
+  function emSetPhase(p, extra) { Object.assign(em, { phase: p }, extra || {}); renderSOS(); }
+
+  function renderSOS() {
+    if (!em) return;
+    clearInterval(emTimer);
+    const box = $('sh-sos'); box.replaceChildren();
+    const n = EX.length, nodes = [];
+    const prog = frac => h('div', { class: 'bar big' }, h('div', { class: 'fill', id: 'emFill', style: 'width:' + Math.round(frac * 100) + '%' }));
+    const overall = (em.i + (em.phase === 'ex' && em.done ? 1 : 0)) / n;
+
+    if (em.phase === 'ex') {
+      const ex = EX[em.i];
+      nodes.push(h('div', { class: 'eyebrow', text: 'EXERCISE ' + (em.i + 1) + ' OF ' + n }), prog(overall),
+        h('div', { class: 'exname', id: 'exName', text: ex.n }),
+        h('div', { class: 'reps', id: 'repCount', text: em.reps + ' / ' + ex.r }),
+        h('button', { class: 'bigbtn go', id: 'repBtn', text: '+1 REP', onclick: () => {
+          em.reps = Math.min(ex.r, em.reps + 1);
+          if (em.reps >= ex.r) { em.done = true; $('doneChk').checked = true; $('nextBtn').disabled = false; }
+          $('repCount').textContent = em.reps + ' / ' + ex.r;
+        } }),
+        h('button', { class: 'tool', id: 'repMinus', text: '\u22121', onclick: () => { em.reps = Math.max(0, em.reps - 1); $('repCount').textContent = em.reps + ' / ' + ex.r; } }),
+        h('label', { class: 'step' }, h('input', { type: 'checkbox', id: 'doneChk', checked: em.done, onchange: e => { em.done = e.target.checked; $('nextBtn').disabled = !em.done; } }), h('span', { text: 'I completed ' + ex.n })),
+        h('button', { class: 'bigbtn', id: 'nextBtn', text: em.i < n - 1 ? 'NEXT: REST' : 'FINISH: START COOLDOWN', disabled: !em.done, onclick: () => {
+          if (em.i < n - 1) { emSetPhase('rest'); } else { emSetPhase('cool'); }
+        } }));
+    } else if (em.phase === 'rest') {
+      nodes.push(h('div', { class: 'eyebrow', text: 'REST \u00b7 NEXT: ' + EX[em.i + 1].n }), prog((em.i + 1) / n),
+        h('div', { class: 'clock', id: 'emClock', text: clock(T.restSec * 1000) }),
+        h('p', { class: 'lead', text: 'Breathe. Drink some water.' }),
+        h('button', { class: 'bigbtn', id: 'skipRest', text: 'SKIP REST', onclick: () => { em.i += 1; emSetPhase('ex', { reps: 0, done: false }); } }));
+      box.append(frame('Emergency Mode', nodes));
+      emRun(Date.now() + T.restSec * 1000, () => { buzz(); em.i += 1; emSetPhase('ex', { reps: 0, done: false }); });
+      return;
+    } else if (em.phase === 'cool' || em.phase === 'act') {
+      const label = em.phase === 'cool' ? 'COOLDOWN \u00b7 10 MINUTES' : em.label.toUpperCase();
+      nodes.push(h('div', { class: 'eyebrow', text: label }), prog(1),
+        h('div', { class: 'clock', id: 'emClock', text: clock(T.cooldownSec * 1000) }),
+        h('p', { class: 'lead', text: em.phase === 'cool' ? 'Water. Slow breathing. Stay out of bed and out of your bedroom.' : 'Do this for the full 10 minutes.' }));
+      box.append(frame('Emergency Mode', nodes));
+      emRun(Date.now() + T.cooldownSec * 1000, () => {
+        buzz();
+        if (document.hidden && perm() === 'granted') showNotif({ title: 'DID YOU OVERCOME THE URGE?', body: 'Open the app and answer honestly.', hash: '#emergency', strong: true }, 'em-ask').catch(() => {});
+        emSetPhase('ask');
+      });
+      return;
+    } else if (em.phase === 'ask') {
+      nodes.push(h('div', { class: 'ask', text: 'DID YOU OVERCOME THE URGE?' }),
+        h('button', { class: 'bigbtn go', id: 'emYes', text: 'YES', onclick: emYes }),
+        h('button', { class: 'bigbtn alt', id: 'emNo', text: 'NOT YET', onclick: () => { emLog('not-yet'); emSetPhase('notyet'); } }));
+    } else if (em.phase === 'notyet') {
+      nodes.push(h('p', { class: 'lead', text: 'That is okay. Keep going. What next?' }),
+        h('button', { class: 'bigbtn', id: 'emRepeat', text: 'REPEAT THE ROUTINE', onclick: () => { em.logged = 'started'; emSetPhase('ex', { i: 0, reps: 0, done: false }); } }),
+        h('button', { class: 'bigbtn alt', id: 'emOther', text: 'CHOOSE ANOTHER HEALTHY ACTIVITY', onclick: () => emSetPhase('pick') }));
+    } else if (em.phase === 'pick') {
+      nodes.push(h('p', { class: 'lead', text: 'Pick one. You will do it for 10 minutes.' }),
+        ACTIVITIES.map((a, i) => h('button', { class: 'bigbtn alt act', id: 'act' + i, text: a, onclick: () => emSetPhase('act', { label: a }) })));
+    }
+    box.append(frame('Emergency Mode', nodes));
+  }
+  function emYes() {
+    if (!em || em.final) return;
+    em.final = true; emLog('overcame');
+    if (window.__omw && window.__omw.isReady()) window.__omw.recordWin();
+    else toast('Could not record the victory. The app is not ready.');
+    closeSheet();
+  }
+  function openSOSIfIdle() { if (!em) openSOS(); }
+
+  /* ---------------- 21-day protection ---------------- */
+  function renderProt() {
+    const box = $('sh-prot'); box.replaceChildren();
+    const n = protDay(Date.now(), S), P = S.protection, nodes = [];
+    if (!P.active) {
+      nodes.push(h('p', { class: 'lead', text: 'A temporary high-alert period for 21 days. Days 2, 3, 4 and 7 are the hardest, so they get stronger reminders and high-alert mode. Your lifetime victories are never reset.' }),
+        h('p', { class: 'note', text: 'Days change at 5:00 AM.' }),
+        h('button', { class: 'bigbtn go', id: 'protStart', text: 'START 21-DAY PROTECTION (TODAY IS DAY 1)', onclick: () => {
+          S.protection = { active: true, start: dayKey(shiftDay(Date.now())), extended: false, decided: false }; saveS(); renderProt(); renderMode(); toast('Protection started. Today is Day 1.'); } }));
+    } else {
+      nodes.push(h('div', { class: 'eyebrow', text: HARD.includes(n) ? 'HIGH-ALERT DAY' : 'PROTECTION ACTIVE' }),
+        h('div', { class: 'reps', id: 'protDay', text: 'Day ' + n + (n > 21 ? ' (extended)' : ' / 21') }),
+        h('div', { class: 'grid21' }, Array.from({ length: 21 }, (_, i) => i + 1).map(d => h('div', { class: 'tile' + (HARD.includes(d) ? ' hard' : '') + (d === n ? ' now' : '') + (d < n ? ' past' : ''), text: String(d) }))),
+        h('p', { class: 'note', text: 'High-alert days: 2, 3, 4 and 7.' }),
+        h('p', { class: 'lead', text: HARD.includes(n) ? 'Today is a hard day. Move your body, change rooms, keep Emergency Mode one tap away.' : 'Keep moving. Change your environment often.' }));
+      if (n > 21 && !P.decided) {
+        nodes.push(h('p', { class: 'lead', text: '21 days complete. Continue protection?' }),
+          h('button', { class: 'bigbtn go', id: 'protCont', text: 'CONTINUE PROTECTION', onclick: () => { S.protection.decided = true; S.protection.extended = true; saveS(); renderProt(); renderMode(); } }),
+          h('button', { class: 'bigbtn alt', id: 'protStopNow', text: 'STOP PROTECTION', onclick: () => { S.protection = { active: false, start: null, extended: false, decided: true }; saveS(); renderProt(); renderMode(); } }));
+      }
+      nodes.push(h('button', { class: 'tool', id: 'protStop', text: 'Stop protection', onclick: async () => {
+        const ok = await window.__omw.ask({ title: 'Stop protection?', body: 'Protection reminders and high-alert days will end. Your victories are not affected.', ok: 'Stop', cancel: 'Keep it', danger: true });
+        if (ok) { S.protection = { active: false, start: null, extended: false, decided: false }; saveS(); renderProt(); renderMode(); } } }));
+    }
+    box.append(frame('21-day protection', nodes));
+  }
+  let protAsked = false;
+  async function protPrompt() {
+    if (protAsked || !window.__omw) return;
+    const n = protDay(Date.now(), S);
+    if (S.protection.active && !S.protection.decided && n > 21) {
+      protAsked = true;
+      const cont = await window.__omw.ask({ title: '21 days complete', body: 'Do you want to continue protection mode?', ok: 'Continue', cancel: 'Stop' });
+      S.protection.decided = true; S.protection.extended = cont;
+      if (!cont) S.protection.active = false;
+      saveS(); renderMode();
+    }
+  }
+
+  /* ---------------- reminders & settings panel ---------------- */
+  function icsText(days) {
+    const now = Date.now(), list = occurrences(now, now + days * 864e5, S);
+    const esc = s => String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+    const fold = l => { const o = []; while (l.length > 73) { o.push(l.slice(0, 73)); l = ' ' + l.slice(73); } o.push(l); return o.join('\r\n'); };
+    const loc = ms => { const d = new Date(ms); return d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + 'T' + pad(d.getHours()) + pad(d.getMinutes()) + '00'; };
+    const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
+    const L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//ONE MILLION WINS//Reminders//EN', 'CALSCALE:GREGORIAN', 'X-WR-CALNAME:ONE MILLION WINS'];
+    for (const o of list) {
+      const m = message(o, S);
+      L.push('BEGIN:VEVENT', 'UID:' + o.id.replace(/[^A-Za-z0-9@-]/g, '') + '-omw', 'DTSTAMP:' + stamp, 'DTSTART:' + loc(o.ts), 'DURATION:PT5M',
+        fold('SUMMARY:' + esc(m.title)), fold('DESCRIPTION:' + esc(m.body || m.title)),
+        'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + esc(m.title), 'TRIGGER:PT0S', 'END:VALARM', 'END:VEVENT');
+    }
+    L.push('END:VCALENDAR');
+    return { text: L.join('\r\n') + '\r\n', count: list.length };
+  }
+  function downloadICS() {
+    const { text, count } = icsText(28);
+    const blob = new Blob([text], { type: 'text/calendar' });
+    const url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = 'one-million-wins-reminders.ics'; a.hidden = true;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 15000);
+    toast(count + ' calendar reminders for the next 28 days saved.');
+  }
+  const timeIn = (val, cb, id) => h('input', { type: 'time', class: 'tin', value: val, id, onchange: e => { if (validTime(e.target.value)) { cb(e.target.value); saveS(); afterChange(); } else e.target.value = val; } });
+  function afterChange() { renderMode(); syncTriggers(); const nx = $('nextRem'); if (nx) nx.textContent = nextText(); }
+  function nextText() {
+    if (!S.on) return 'Reminders are switched off.';
+    const o = occurrences(Date.now(), Date.now() + 48 * 3600e3, S)[0];
+    if (!o) return 'No reminder in the next 48 hours.';
+    const m = message(o, S), d = new Date(o.ts);
+    return 'Next: ' + d.toLocaleDateString(undefined, { weekday: 'short' }) + ' ' + fmtTime(o.ts) + ' \u00b7 ' + m.title;
+  }
+  function renderRemind() {
+    const box = $('sh-remind'); box.replaceChildren();
+    const p = perm(), nodes = [];
+    const permText = p === 'granted' ? 'Allowed' : p === 'denied' ? 'Blocked (change it in Chrome site settings)' : p === 'unsupported' ? 'Not supported here' : 'Not enabled yet';
+    nodes.push(h('div', { class: 'card' },
+      h('div', { class: 'kv' }, h('span', { text: 'Notifications' }), h('b', { id: 'permText', text: permText })),
+      h('div', { class: 'kv' }, h('span', { text: 'Scheduled delivery when closed' }), h('b', { text: triggersSupported() ? 'Supported by this browser' : 'Not supported by this browser' })),
+      h('p', { class: 'note', id: 'nextRem', text: nextText() }),
+      h('div', { class: 'btnrow' },
+        h('button', { class: 'tool', id: 'enableNotif', text: 'Enable notifications', onclick: async () => { try { await Notification.requestPermission(); } catch (e) { /* ignore */ } renderRemind(); syncTriggers(); } }),
+        h('button', { class: 'tool', id: 'testNotif', text: 'Send test notification', onclick: () => { if (perm() !== 'granted') return toast('Enable notifications first.'); showNotif({ title: 'ONE MILLION WINS', body: 'Test notification.', hash: '' }, 'test@' + Date.now()).catch(e => toast('Could not show it: ' + e.message)); } })),
+      h('p', { class: 'warn', text: 'Honest limit: a web app cannot guarantee notifications while it is fully closed. Chrome only delivers these while the app is open or recently active in the background, and Android may freeze it. For reminders that fire reliably with the app closed, export them to your calendar below.' }),
+      h('div', { class: 'btnrow' }, h('button', { class: 'tool', id: 'exportIcs', text: 'Export to calendar (.ics, 28 days)', onclick: downloadICS })),
+      h('label', { class: 'step' }, h('input', { type: 'checkbox', id: 'masterOn', checked: S.on, onchange: e => { S.on = e.target.checked; saveS(); afterChange(); } }), h('span', { text: 'Reminders on' }))));
+
+    const sleepRow = (label, key) => h('div', { class: 'row2' }, h('span', { text: label }), timeIn(S.sleep[key].start, v => { S.sleep[key].start = v; }, 'sl-' + key + '-s'), h('span', { text: 'to' }), timeIn(S.sleep[key].end, v => { S.sleep[key].end = v; }, 'sl-' + key + '-e'));
+    nodes.push(h('h3', { text: 'Sleep hours (never disturbed)' }), sleepRow('Mon\u2013Fri', 'weekday'), sleepRow('Sat\u2013Sun', 'weekend'),
+      h('p', { class: 'note', text: 'Reminders inside these hours are skipped. A reminder exactly at wake-up time still fires.' }));
+
+    const remRows = grp => S.reminders.filter(r => r.group === grp).map(r => h('div', { class: 'row2' },
+      h('input', { type: 'checkbox', checked: r.on, id: 'on-' + r.id, onchange: e => { r.on = e.target.checked; saveS(); afterChange(); } }),
+      timeIn(r.time, v => { r.time = v; }, 'tm-' + r.id), h('span', { class: 'grow', text: r.title })));
+    nodes.push(h('h3', { text: 'Before sleep' }), remRows('pre'), h('h3', { text: 'After waking' }), remRows('post'));
+
+    nodes.push(h('h3', { text: 'Vulnerable window (High-Alert mode)' }),
+      h('div', { class: 'row2' }, timeIn(S.vulnerable.start, v => { S.vulnerable.start = v; }, 'vu-s'), h('span', { text: 'to' }), timeIn(S.vulnerable.end, v => { S.vulnerable.end = v; }, 'vu-e')),
+      h('h3', { text: 'Weekend high-alert' }),
+      h('label', { class: 'step' }, h('input', { type: 'checkbox', id: 'wkOn', checked: S.weekendAlerts.on, onchange: e => { S.weekendAlerts.on = e.target.checked; saveS(); afterChange(); } }), h('span', { text: 'Saturday 5:00 AM \u2192 Monday 5:00 AM' })),
+      h('div', { class: 'row2' }, h('span', { text: 'Every' }),
+        h('select', { class: 'tin', id: 'wkEvery', onchange: e => { S.weekendAlerts.every = +e.target.value; saveS(); afterChange(); } }, [1, 2, 3, 4, 6].map(v => h('option', { value: v, selected: v === S.weekendAlerts.every, text: v + ' hour' + (v > 1 ? 's' : '') }))),
+        h('span', { text: 'while awake' })));
+    box.append(frame('Reminders', nodes));
+  }
+
+  /* ---------------- backup hooks ---------------- */
+  function exportData() { return { settings: jget(KEY_S, null), history: hist() }; }
+  function importData(plus) {
+    if (!plus || typeof plus !== 'object') return;
+    if (plus.settings && !lsGet(KEY_S)) { S = sanitize(plus.settings); saveS(); }
+    const H = hist(), inc = plus.history || {};
+    const ids = new Set(H.challenges.map(c => c.id));
+    for (const c of (Array.isArray(inc.challenges) ? inc.challenges : [])) {
+      if (c && typeof c.id === 'string' && !ids.has(c.id) && typeof c.startedAt === 'number' && ['open', 'on-time', 'late', 'timeout'].includes(c.status)) H.challenges.push({ id: c.id, startedAt: c.startedAt, endAt: +c.endAt || c.startedAt, doneAt: c.doneAt || null, status: c.status, secs: c.secs == null ? null : +c.secs });
+    }
+    const eids = new Set(H.emergencies.map(c => c.id));
+    for (const e of (Array.isArray(inc.emergencies) ? inc.emergencies : [])) {
+      if (e && typeof e.id === 'string' && !eids.has(e.id) && typeof e.ts === 'number') H.emergencies.push({ id: e.id, ts: e.ts, outcome: String(e.outcome || '').slice(0, 20) });
+    }
+    H.challenges.sort((a, b) => a.startedAt - b.startedAt); H.emergencies.sort((a, b) => a.ts - b.ts);
+    saveHist(H); renderMode();
+  }
+
+  /* ---------------- routing (notification taps, shortcuts) ---------------- */
+  function route(hash) {
+    const x = (hash || '').replace('#', '');
+    if (!['emergency', 'challenge', 'challenge-start'].includes(x)) return;
+    if (x === 'emergency') openSOSIfIdle(); else openChallenge(x === 'challenge-start');
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* ignore */ }
+  }
+
+  /* ---------------- wire up ---------------- */
+  $('sos').addEventListener('click', openSOSIfIdle);
+  $('openChallenge').addEventListener('click', () => openChallenge(false));
+  $('openRemind').addEventListener('click', () => { openSheet('sh-remind'); renderRemind(); });
+  $('openProt').addEventListener('click', () => { openSheet('sh-prot'); renderProt(); });
+  window.addEventListener('hashchange', () => route(location.hash));
+  try { if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => { if (e.data && e.data.type === 'omw-open') route(e.data.hash); }); } catch (e) { /* ignore */ }
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { tick(); renderMode(); syncTriggers(); protPrompt(); } });
+  setInterval(tick, 15000);
+  setInterval(renderMode, 30000);
+
+  window.OMWPlus = {
+    exportData, importData, T,
+    mode: () => mode(Date.now(), S),
+    settings: () => S,
+    upcoming: hours => occurrences(Date.now(), Date.now() + hours * 3600e3, S).map(o => Object.assign({ ts: o.ts, id: o.id }, message(o, S))),
+    icsText, tick, triggersSupported
+  };
+
+  renderMode();
+  chalNormalize();
+  tick();
+  syncTriggers();
+  setTimeout(protPrompt, 1500);
+  route(location.hash);
 })();
 </script>
 </body>
